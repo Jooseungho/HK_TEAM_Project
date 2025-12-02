@@ -1,7 +1,6 @@
 package com.his.system.vital;
 
 import com.his.system.visit.Visit;
-import com.his.system.staff.Staff;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -20,14 +19,13 @@ public class Vital {
     @Column(name = "VITAL_ID")
     private Long id;
 
-    // VISIT FK
+    // VISIT FK (정상)
     @ManyToOne
     @JoinColumn(name = "VISIT_ID", nullable = false)
     private Visit visit;
 
-    // NURSE FK
-    @ManyToOne
-    @JoinColumn(name = "NURSE_ID", nullable = false)
+    // NURSE ID → 단순 Long 값
+    @Column(name = "NURSE_ID", nullable = false)
     private Long nurseId;
 
     @Column(name = "BP_SYSTOLIC")
