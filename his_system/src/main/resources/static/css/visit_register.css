@@ -1,0 +1,144 @@
+body {
+    font-family: 'Pretendard', sans-serif;
+    background: #F7F9FB;
+    margin: 0;
+}
+
+.layout-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* =======================
+   LEFT PANEL
+   ======================= */
+.left-panel {
+    width: 25%;
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.search-box {
+    display: flex;
+    gap: 8px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 7px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.search-box button {
+    padding: 7px 12px;
+    background: #6CA6F8;
+    color: white;
+    border: none;
+    border-radius: 6px;
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: #5D8BF4;
+    color: white;
+    border-radius: 6px;
+    font-size: 15px;
+    margin-top: 10px;
+}
+
+/* =======================
+   CENTER PANEL (WAITING LIST)
+   ======================= */
+.center-panel {
+    width: 40%;
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.waiting-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.waiting-table th {
+    background: #F1F4FF;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.waiting-table td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.call-btn {
+    background: #6CB0E0;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: white;
+}
+
+.called-row {
+    background: #E7F3FF !important;
+}
+
+
+/* =======================
+   RIGHT PANEL (SELECTED PATIENT)
+   ======================= */
+.right-panel {
+    width: 30%;
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+#selectedPatientBox {
+    min-height: 120px;
+    background: #F7F9FF;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.start-btn {
+    width: 100%;
+    padding: 10px;
+    background: #5AB75E;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    margin-top: 10px;
+}
+
+.finish-btn {
+    width: 100%;
+    padding: 10px;
+    background: #FF5C61;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    margin-top: 5px;
+}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>대기 환자 목록</title>
+    <link rel="stylesheet" href="/css/visit_waiting_list.css" />
+</head>
+<body>
+
+    <div class="container">
+        <h2 class="title">🏥 접수 · 대기 환자 목록</h2>
+
+        <button class="refresh-btn" onclick="loadWaitingList()">🔄 새로고침</button>
+
+        <table class="waiting-table">
+            <thead>
+                <tr>
+                    <th>환자명</th>
+                    <th>차트번호</th>
+                    <th>상태</th>
+                    <th>도착시간</th>
+                </tr>
+            </thead>
+            <tbody id="waiting-body">
+                <!-- JS에서 자동 렌더링 -->
+            </tbody>
+        </table>
+    </div>
+
+<script src="/js/visit_waiting_list.js"></script>
+</body>
+</html>

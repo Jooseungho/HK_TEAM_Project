@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>외래 접수</title>
+    <link rel="stylesheet" href="/css/visit_register.css">
+</head>
+<body>
+
+<div class="layout-container">
+
+    <!-- 왼쪽: 접수 폼 -->
+    <div class="left-panel">
+        <h2 class="title">🧾 환자 접수</h2>
+
+        <!-- 환자 검색 -->
+        <div class="search-box">
+            <input type="text" id="searchKeyword" placeholder="이름 또는 차트번호 입력">
+            <button onclick="searchPatient()">검색</button>
+        </div>
+
+        <!-- 검색결과 -->
+        <div id="searchResult"></div>
+
+        <!-- Vital 입력 폼 -->
+        <form id="vitalForm" style="display:none;">
+            <h3>📌 활력징후 입력</h3>
+
+            <input type="hidden" id="patientId">
+
+            <div class="form-row">
+                <label>수축기</label><input type="number" id="bpSystolic">
+            </div>
+
+            <div class="form-row">
+                <label>이완기</label><input type="number" id="bpDiastolic">
+            </div>
+
+            <div class="form-row">
+                <label>심박수</label><input type="number" id="heartRate">
+            </div>
+
+            <div class="form-row">
+                <label>체온</label><input type="number" id="temperature" step="0.1">
+            </div>
+
+            <div class="form-row">
+                <label>호흡수</label><input type="number" id="respiration">
+            </div>
+
+            <div class="form-row">
+                <label>SpO₂</label><input type="number" id="spo2">
+            </div>
+
+            <div class="form-row">
+                <label>메모</label><textarea id="memo"></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">접수 완료</button>
+        </form>
+    </div>
+
+
+
+    <!-- 중앙: 대기 환자 목록 -->
+    <div class="center-panel">
+        <h2 class="title">⏳ 대기 환자</h2>
+
+        <table class="waiting-table">
+            <thead>
+            <tr>
+                <th>환자명</th>
+                <th>차트번호</th>
+                <th>도착시간</th>
+                <th>상태</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody id="waitingList"></tbody>
+        </table>
+    </div>
+
+
+    <!-- 오른쪽: 호출된 환자 정보 패널 -->
+    <div class="right-panel">
+        <h2 class="title">📣 호출된 환자</h2>
+
+        <div id="selectedPatientBox" class="selected-box-empty">
+            환자를 호출하면 이곳에 표시됩니다.
+        </div>
+
+        <div id="callActionBox" style="display:none;">
+            <button class="start-btn" onclick="startTreatment()">진료 시작</button>
+            <button class="finish-btn" onclick="finishTreatment()">진료 종료</button>
+        </div>
+    </div>
+
+</div>
+
+<script src="/js/visit_register.js"></script>
+</body>
+</html>
