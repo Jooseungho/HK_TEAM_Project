@@ -18,14 +18,14 @@ public class MedicalRecordService {
     private final VisitRepository visitRepository;
     private final StaffRepository staffRepository;
 
-    // SOAP 기록 생성
+    // SOAP 저장
     public MedicalRecord createRecord(Long visitId, Long doctorId, MedicalRecord data) {
 
         Visit visit = visitRepository.findById(visitId)
-                .orElseThrow(() -> new RuntimeException("내원 정보 없음"));
+                .orElseThrow(() -> new RuntimeException("visit 없음"));
 
         Staff doctor = staffRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("의사 정보 없음"));
+                .orElseThrow(() -> new RuntimeException("doctor 없음"));
 
         MedicalRecord record = MedicalRecord.builder()
                 .visit(visit)
@@ -43,21 +43,22 @@ public class MedicalRecordService {
         return medicalRecordRepository.save(record);
     }
 
-    // 내원별 진료 기록 조회 (1:N)
+    // 방문별 조회
     public List<MedicalRecord> getRecordsByVisit(Long visitId) {
-        return medicalRecordRepository.findAll().stream()
-                .filter(r -> r.getVisit().getId().equals(visitId))
-                .toList();
+        return medicalRecordRepository.findByVisitId(visitId);
     }
 
-    // 의사별 전체 기록 조회
+    // 의사별 조회
     public List<MedicalRecord> getRecordsByDoctor(Long doctorId) {
-        return medicalRecordRepository.findAll().stream()
-                .filter(r -> r.getDoctor().getId().equals(doctorId))
-                .toList();
+        return medicalRecordRepository.findByDoctorId(doctorId);
     }
 
-    // 진료 기록 상세 조회
+    // 환자별 조회
+    public List<MedicalRecord> getRecordsByPatient(Long patientId) {
+        return medicalRecordRepository.findByVisitPatientId(patientId);
+    }
+
+    // 단일 조회
     public MedicalRecord getRecord(Long id) {
         return medicalRecordRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("기록 없음"));

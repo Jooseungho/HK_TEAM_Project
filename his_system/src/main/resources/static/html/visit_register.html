@@ -2,102 +2,294 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>외래 접수</title>
-    <link rel="stylesheet" href="/css/visit_register.css">
+    <title>환자 접수</title>
+
+    <style>
+        body { font-family: 'Pretendard', sans-serif; }
+
+        .layout {
+            display: flex;
+            gap: 25px;
+            width: 100%;
+        }
+
+        /* LEFT PANEL */
+        .left-panel {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .patient-card {
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+        .patient-card:hover {
+            background: #f0fdf4;
+            border-color: #4ade80;
+        }
+        .patient-card.active {
+            background: #dcfce7;
+            border-color: #22c55e;
+        }
+
+        /* RIGHT PANEL */
+        .right-panel {
+            flex: 1.2;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            min-height: 500px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #777;
+            margin-top: 120px;
+        }
+        .placeholder-icon {
+            font-size: 70px;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { font-weight: 600; display: block; margin-bottom: 6px; }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #22c55e;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="layout-container">
+<div class="layout">
 
-    <!-- 왼쪽: 접수 폼 -->
+    <!-- LEFT -->
     <div class="left-panel">
-        <h2 class="title">🧾 환자 접수</h2>
+        <h3>환자 검색</h3>
 
-        <!-- 환자 검색 -->
-        <div class="search-box">
-            <input type="text" id="searchKeyword" placeholder="이름 또는 차트번호 입력">
-            <button onclick="searchPatient()">검색</button>
-        </div>
+        <input id="search-input" type="text"
+               placeholder="이름, 전화번호, 차트번호로 검색"
+               oninput="filterVisitPatients()"
+               style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:20px;">
 
-        <!-- 검색결과 -->
-        <div id="searchResult"></div>
-
-        <!-- Vital 입력 폼 -->
-        <form id="vitalForm" style="display:none;">
-            <h3>📌 활력징후 입력</h3>
-
-            <input type="hidden" id="patientId">
-
-            <div class="form-row">
-                <label>수축기</label><input type="number" id="bpSystolic">
-            </div>
-
-            <div class="form-row">
-                <label>이완기</label><input type="number" id="bpDiastolic">
-            </div>
-
-            <div class="form-row">
-                <label>심박수</label><input type="number" id="heartRate">
-            </div>
-
-            <div class="form-row">
-                <label>체온</label><input type="number" id="temperature" step="0.1">
-            </div>
-
-            <div class="form-row">
-                <label>호흡수</label><input type="number" id="respiration">
-            </div>
-
-            <div class="form-row">
-                <label>SpO₂</label><input type="number" id="spo2">
-            </div>
-
-            <div class="form-row">
-                <label>메모</label><textarea id="memo"></textarea>
-            </div>
-
-            <button type="submit" class="submit-btn">접수 완료</button>
-        </form>
+        <div id="visit-patient-list"></div>
     </div>
 
-
-
-    <!-- 중앙: 대기 환자 목록 -->
-    <div class="center-panel">
-        <h2 class="title">⏳ 대기 환자</h2>
-
-        <table class="waiting-table">
-            <thead>
-            <tr>
-                <th>환자명</th>
-                <th>차트번호</th>
-                <th>도착시간</th>
-                <th>상태</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody id="waitingList"></tbody>
-        </table>
-    </div>
-
-
-    <!-- 오른쪽: 호출된 환자 정보 패널 -->
-    <div class="right-panel">
-        <h2 class="title">📣 호출된 환자</h2>
-
-        <div id="selectedPatientBox" class="selected-box-empty">
-            환자를 호출하면 이곳에 표시됩니다.
+    <!-- RIGHT -->
+    <div class="right-panel" id="right-panel">
+        <div id="placeholder" class="placeholder">
+            <div class="placeholder-icon">👤</div>
+            환자를 선택해주세요
         </div>
 
-        <div id="callActionBox" style="display:none;">
-            <button class="start-btn" onclick="startTreatment()">진료 시작</button>
-            <button class="finish-btn" onclick="finishTreatment()">진료 종료</button>
+        <div id="register-form" style="display:none;">
+            <h2 id="selected-name"></h2>
+
+            <p id="selected-info" style="margin-bottom:25px; color:#444;"></p>
+
+            <div class="form-group">
+                <label>혈압 *</label>
+                <input type="text" id="bp" placeholder="예: 120/80">
+            </div>
+
+            <div class="form-group">
+                <label>맥박 *</label>
+                <input type="number" id="pulse" placeholder="예: 72">
+            </div>
+
+            <div class="form-group">
+                <label>체온 *</label>
+                <input type="number" id="temperature" step="0.1" placeholder="예: 36.5">
+            </div>
+
+            <div class="form-group">
+                <label>현재 증상</label>
+                <textarea id="symptom" rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>병력 및 특이사항</label>
+                <textarea id="history" rows="3"></textarea>
+            </div>
+
+            <button class="submit-btn" onclick="submitVisit()">+ 접수 완료</button>
         </div>
     </div>
-
 </div>
 
-<script src="/js/visit_register.js"></script>
+
+<script>
+let visitPatientAll = [];
+
+/* --------------------------
+   환자 목록 불러오기
+--------------------------- */
+function loadVisitPatients() {
+    fetch("/api/patient/list")
+        .then(res => res.json())
+        .then(list => {
+            visitPatientAll = list;
+            renderVisitPatients(list);
+        });
+}
+
+/* --------------------------
+   환자 목록 렌더링
+--------------------------- */
+function renderVisitPatients(list) {
+    const area = document.getElementById("visit-patient-list");
+    if (!area) return;
+
+    area.innerHTML = "";
+
+    list.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "patient-card";
+
+        card.innerHTML = `
+            <div style="display:flex; gap:10px; align-items:center;">
+                <strong>${p.name}</strong>
+                <span style="
+                    background:${p.gender === "M" ? "#dbeafe" : "#ffe4e6"};
+                    color:${p.gender === "M" ? "#1d4ed8" : "#db2777"};
+                    font-size:12px; padding:2px 6px; border-radius:6px;">
+                    ${p.gender === "M" ? "남" : "여"}
+                </span>
+            </div>
+            <div style="font-size:14px; margin-top:5px; color:#555;">
+                차트번호: ${p.chartNo}<br>
+                생년월일: ${p.birthdate}<br>
+                연락처: ${p.phone}<br>
+                주소: ${p.address}
+            </div>
+        `;
+
+        card.addEventListener("click", () => selectVisitPatient(p, card));
+
+        area.appendChild(card);
+    });
+}
+
+/* --------------------------
+   환자 선택
+--------------------------- */
+function selectVisitPatient(p, card) {
+
+    document.querySelectorAll(".patient-card").forEach(c => c.classList.remove("active"));
+    card.classList.add("active");
+
+    document.getElementById("placeholder").style.display = "none";
+    document.getElementById("register-form").style.display = "block";
+
+    document.getElementById("selected-name").innerText = p.name;
+    document.getElementById("selected-info").innerHTML = `
+        차트번호: ${p.chartNo}<br>
+        생년월일: ${p.birthdate}
+    `;
+
+    window.selectedVisitPatient = p;
+}
+
+/* --------------------------
+   검색 필터
+--------------------------- */
+function filterVisitPatients() {
+    const keyword = document.getElementById("search-input").value.trim();
+
+    // 검색어가 없으면 전체 리스트 다시 출력
+    if (keyword === "") {
+        renderVisitPatients(visitPatientAll);
+        return;
+    }
+
+    const filtered = visitPatientAll.filter(p =>
+        p.name.includes(keyword) ||
+        p.chartNo.toLowerCase().includes(keyword.toLowerCase()) ||
+        p.phone.replace(/-/g, "").includes(keyword.replace(/-/g, ""))
+    );
+
+    renderVisitPatients(filtered);
+}
+
+async function submitVisit() {
+    if (!window.selectedVisitPatient) {
+        alert("환자를 먼저 선택해주세요.");
+        return;
+    }
+
+    const bp = document.getElementById("bp").value.trim();
+    const pulse = document.getElementById("pulse").value.trim();
+    const temperature = document.getElementById("temperature").value.trim();
+    const symptom = document.getElementById("symptom").value.trim();
+    const history = document.getElementById("history").value.trim();
+
+    if (!bp || !pulse || !temperature) {
+        alert("필수 항목(혈압/맥박/체온)을 입력해주세요.");
+        return;
+    }
+
+    const [bpSystolic, bpDiastolic] = bp.split("/").map(v => parseInt(v));
+
+    const requestBody = {
+        patientId: window.selectedVisitPatient.id,
+        nurseId: 1,
+        bpSystolic,
+        bpDiastolic,
+        heartRate: parseInt(pulse),
+        temperature: parseFloat(temperature),
+        memo: symptom + "\n" + history
+    };
+
+    console.log("📡 전송 데이터:", requestBody);
+
+    try {
+        const response = await fetch("/api/visit/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (response.ok) {
+            alert("접수가 완료되었습니다!");
+            location.reload();
+        } else {
+            alert("저장 실패: " + await response.text());
+        }
+    } catch (err) {
+        console.error(err);
+        alert("서버 오류 발생");
+    }
+}
+
+
+
+/* 첫 로딩 */
+loadVisitPatients();
+</script>
+
 </body>
-<div id="header"></div>
 </html>

@@ -1,5 +1,6 @@
 package com.his.system.patient;
 
+import com.his.system.patient.dto.PatientListDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,22 +19,27 @@ public class PatientController {
         return patientService.register(patient);
     }
 
-    // 전체 조회
+    // 전체 조회 (엔티티)
     @GetMapping("/list")
     public List<Patient> getAllPatients() {
-        return patientService.getAllPatients();
+        return patientService.findAllEntity();
     }
 
-    // 환자 상세 조회
+    // 전체 조회 (DTO)
+    @GetMapping("/list/dto")
+    public List<PatientListDto> getAllPatientsDto() {
+        return patientService.findAllDto();
+    }
+
+    // 상세조회
     @GetMapping("/{id}")
     public Patient getPatient(@PathVariable Long id) {
         return patientService.getPatient(id);
     }
 
-    // 차트번호로 조회
-    @GetMapping("/chart_no/{chartNo}")
+    // 차트번호 조회
+    @GetMapping("/chart/{chartNo}")
     public Patient getPatientByChartNo(@PathVariable String chartNo) {
         return patientService.getPatientByChartNo(chartNo);
     }
 }
-

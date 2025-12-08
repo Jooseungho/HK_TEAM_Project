@@ -2,14 +2,17 @@ package com.his.system.visit;
 
 import com.his.system.patient.Patient;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Table(name = "VISIT")
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Visit {
 
     @Id
@@ -17,22 +20,28 @@ public class Visit {
     @Column(name = "VISIT_ID")
     private Long id;
 
-    // 환자 정보 (N:1)
+    // 환자 FK
     @ManyToOne
-    @JoinColumn(name = "patient_id")
+    @JoinColumn(name = "PATIENT_ID", nullable = false)
     private Patient patient;
 
-    // 담당 의사 ID (optional)
+    // 의사 ID (Staff FK)
+    @Column(name = "DOCTOR_ID")
     private Long doctorId;
 
-    // 접수 상태
     @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS")
     private VisitStatus status;
 
-    // 시간 정보
-    private LocalDateTime arrivalTime; // 도착 시간
-    private LocalDateTime callTime;    // 호출 시간
-    private LocalDateTime startTime;   // 진료 시작
-    private LocalDateTime endTime;     // 진료 종료
+    @Column(name = "ARRIVAL_TIME")
+    private LocalDateTime arrivalTime;
 
+    @Column(name = "CALL_TIME")
+    private LocalDateTime callTime;
+
+    @Column(name = "START_TIME")
+    private LocalDateTime startTime;
+
+    @Column(name = "END_TIME")
+    private LocalDateTime endTime;
 }

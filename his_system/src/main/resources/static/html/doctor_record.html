@@ -1,0 +1,80 @@
+<h2>진료 기록</h2>
+
+<div id="patient-box"></div>
+<div id="vital-box"></div>
+
+<h3>SOAP 진료 기록</h3>
+
+<textarea id="subjective" placeholder="주관적 증상"></textarea>
+<textarea id="objective" placeholder="객관적 조건"></textarea>
+<textarea id="assessment" placeholder="평가/진단"></textarea>
+<textarea id="plan" placeholder="치료 계획"></textarea>
+
+<label>진단명 *</label>
+<input id="diagnosisName">
+
+<label>ICD10 코드 *</label>
+<input id="icd10Code">
+
+<button onclick="saveRecord()">임시 저장</button>
+<button onclick="completeTreat()">진료 완료</button>
+
+<script>
+const visitId = new URLSearchParams(location.search).get("visitId");
+const doctorId = 1;
+
+async function loadDetail() {
+    const res = await fetch(`/api/visit/${visitId}/detail`);
+    const data = await res.json();
+
+    const p = data.patient;
+    const v = data.vital;
+
+    document.getElementById("patient-box").innerHTML = `
+        <h3>${p.name} (${p.chartNo})</h3>
+    `;
+
+    document.getElementById("vital-box").innerHTML = `
+        혈압: ${v?.bpSystolic}/${v?.bpDiastolic}<br>
+        맥박: ${v?.heartRate} bpm<br>
+        체온: ${v?.temperature}℃
+    `;
+}
+
+async function saveRecord() {
+
+    const body = {
+        subjective: subjective.value,
+        objective: objective.value,
+        assessment: assessment.value,
+        plan: plan.value,
+        diagnosisName: diagnosisName.value,
+        icd10Code: icd10Code.value
+    };
+
+    await fetch(`/api/record/create?visitId=${visitId}&doctorId=${doctorId}`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(body)
+    });
+
+    alert("임시 저장 완료");
+}
+
+async function completeTreat() {
+
+    if (!diagnosisName.value || !icd10Code.value) {
+        alert("진단명과 ICD10 코드는 필수입니다.");
+        return;
+    }
+
+    await saveRecord();
+
+    await fetch(`/api/visit/${visitId}/complete`, { method:"POST" });
+
+    alert("진료가 완료되었습니다.");
+    location.href = "/html/doctor_dashboard.html";
+}
+
+loadDetail();
+</script>

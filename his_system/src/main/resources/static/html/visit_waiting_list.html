@@ -1,33 +1,267 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <title>대기 환자 목록</title>
-    <link rel="stylesheet" href="/css/visit_waiting_list.css" />
+    <meta charset="UTF-8">
+    <title>환자 대기열</title>
+
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #f8f9fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 상단 카드 섹션 */
+        .summary-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px 40px;
+        }
+
+        .summary-card {
+            flex: 1;
+            padding: 20px;
+            border-radius: 12px;
+            background: #fff7da;
+            border: 1px solid #f5e8b9;
+            font-size: 1.2rem;
+        }
+
+        .summary-card.blue {
+            background: #e8f1ff;
+            border-color: #cbdfff;
+        }
+
+        .summary-card.green {
+            background: #e6ffe8;
+            border-color: #b9f5c0;
+        }
+
+        .summary-title {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        /* 탭 메뉴 */
+        .tab-menu {
+            display: flex;
+            gap: 40px;
+            padding: 10px 40px;
+            border-bottom: 1px solid #ddd;
+            background: white;
+        }
+
+        .tab {
+            padding: 10px 0;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            color: #2563eb;
+            border-bottom: 3px solid #2563eb;
+        }
+
+        /* 대기 환자 영역 */
+        .section-title {
+            margin: 30px 40px 10px;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .section-sub {
+            margin-left: 40px;
+            color: #777;
+            margin-bottom: 20px;
+        }
+
+        /* 환자 카드 */
+        .patient-card {
+            background: white;
+            padding: 20px;
+            border-radius: 14px;
+            margin: 0 40px 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .patient-top {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .left-area {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .number-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #ffcd4a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .patient-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .patient-sub {
+            color: #666;
+            margin-left: 3px;
+        }
+
+        .call-btn {
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .call-btn:hover {
+            background: #1d4ed8;
+        }
+
+        /* Vital 박스 */
+        .vital-box {
+            background: #f6f8fc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .vital-item {
+            text-align: center;
+        }
+
+        .vital-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .vital-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2 class="title">🏥 접수 · 대기 환자 목록</h2>
-
-        <button class="refresh-btn" onclick="loadWaitingList()">🔄 새로고침</button>
-
-        <table class="waiting-table">
-            <thead>
-                <tr>
-                    <th>환자명</th>
-                    <th>차트번호</th>
-                    <th>상태</th>
-                    <th>도착시간</th>
-                </tr>
-            </thead>
-            <tbody id="waiting-body">
-                <!-- JS에서 자동 렌더링 -->
-            </tbody>
-        </table>
+<!-- 상단 요약 카드 -->
+<div class="summary-container">
+    <div class="summary-card">
+        <div class="summary-title">대기 중</div>
+        <div class="summary-value" id="waiting-count">0명</div>
     </div>
+    <div class="summary-card blue">
+        <div class="summary-title">진료 중</div>
+        <div class="summary-value" id="in-treatment-count">0명</div>
+    </div>
+    <div class="summary-card green">
+        <div class="summary-title">완료</div>
+        <div class="summary-value" id="done-count">0명</div>
+    </div>
+</div>
 
-<script src="/js/visit_waiting_list.js"></script>
+<!-- 탭 메뉴 -->
+<div class="tab-menu">
+    <div class="tab active">환자 대기열</div>
+    <div class="tab">진료 기록</div>
+    <div class="tab">처방 관리</div>
+    <div class="tab">문서 발행</div>
+</div>
+
+<!-- 제목 -->
+<div class="section-title">대기 중인 환자</div>
+<div class="section-sub" id="waiting-info">총 0명이 대기 중입니다.</div>
+
+<!-- 환자 카드 렌더링 영역 -->
+<div id="waiting-list"></div>
+
+<script>
+    async function loadWaitingList() {
+        const res = await fetch('/api/visit/waiting_list');
+        const list = await res.json();
+
+        const container = document.getElementById("waiting-list");
+        const waitingCount = document.getElementById("waiting-count");
+        const waitingInfo = document.getElementById("waiting-info");
+
+        container.innerHTML = "";
+
+        waitingCount.innerText = list.length + "명";
+        waitingInfo.innerText = "총 " + list.length + "명이 대기 중입니다.";
+
+        list.forEach((v, index) => {
+            container.innerHTML += `
+                <div class="patient-card">
+                    <div class="patient-top">
+                        <div class="left-area">
+                            <div class="number-badge">${index + 1}</div>
+                            <div>
+                                <div class="patient-name">${v.patientName}</div>
+                                <div class="patient-sub">${v.chartNo}</div>
+                                <div class="patient-sub">⏱ ${v.createdAt}</div>
+                            </div>
+                        </div>
+
+                        <button class="call-btn" onclick="callPatient(${v.visitId})">호출</button>
+                    </div>
+
+                    <div class="vital-box">
+                        <div class="vital-item">
+                            <div class="vital-label">혈압</div>
+                            <div class="vital-value">${v.bpSystolic}/${v.bpDiastolic}</div>
+                        </div>
+                        <div class="vital-item">
+                            <div class="vital-label">맥박</div>
+                            <div class="vital-value">${v.heartRate} bpm</div>
+                        </div>
+                        <div class="vital-item">
+                            <div class="vital-label">체온</div>
+                            <div class="vital-value">${v.temperature}℃</div>
+                        </div>
+                        <div class="vital-item">
+                            <div class="vital-label">증상</div>
+                            <div class="vital-value">${v.symptom ?? '-'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function callPatient(visitId) {
+        fetch(`/api/visit/call/${visitId}`, { method: "POST" })
+            .then(() => alert("환자를 호출했습니다."))
+            .then(loadWaitingList);
+    }
+
+    loadWaitingList();
+    setInterval(loadWaitingList, 5000);
+</script>
+
 </body>
-<div id="header"></div>
 </html>

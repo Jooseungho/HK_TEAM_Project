@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Vital 리스트</title>
+</head>
+<body>
+
+<h2>Vital 리스트</h2>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>수축기</th>
+        <th>이완기</th>
+        <th>심박수</th>
+        <th>체온</th>
+        <th>호흡수</th>
+        <th>측정 시간</th>
+    </tr>
+    </thead>
+    <tbody id="vital-body">
+    </tbody>
+</table>
+
+<script>
+async function loadVitals() {
+    const res = await fetch('/api/vital/list');  // patientId 버전은 여기에 추가 예정
+    const data = await res.json();
+
+    const tbody = document.getElementById("vital-body");
+    tbody.innerHTML = "";
+
+    data.forEach(v => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${v.bpSystolic}</td>
+                <td>${v.bpDiastolic}</td>
+                <td>${v.heartRate}</td>
+                <td>${v.temperature}</td>
+                <td>${v.respiration}</td>
+                <td>${v.createdAt}</td>
+            </tr>
+        `;
+    })
+}
+
+loadVitals();
+</script>
+
+</body>
+</html>

@@ -2,17 +2,158 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="/css/style.css">
-    <title>의사 대시보드</title>
+    <title>의사 진료 시스템</title>
+
+    <style>
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background: #f9fafb; }
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 18px 30px; background: white; border-bottom: 1px solid #e5e7eb;
+            font-size: 18px; font-weight: 600;
+        }
+        .cards { display:flex; gap:15px; padding:20px 30px; }
+        .card { flex:1; background:#eef6ff; border-radius:12px; padding:20px; font-size:16px; }
+        .card.yellow { background:#fff8dc; }
+        .card.green { background:#eafff1; }
+        .card.blue { background:#e6f0ff; }
+        .card-title { color:#555; margin-bottom:7px; }
+        .card-value { font-size:22px; font-weight:700; }
+
+        /* Tabs */
+        .tabs { display:flex; padding:10px 30px 0; gap:35px; background:white; border-bottom:1px solid #d1d5db; font-size:17px; }
+        .tab { padding:10px 4px 14px; cursor:pointer; color:#4b5563; }
+        .tab.active { font-weight:700; color:#2563eb; border-bottom:3px solid #2563eb; }
+
+        #content-area { padding:25px 30px; }
+    </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h2>의사 메인</h2>
+<header>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <img src="/static/icon_doctor.svg" width="30">
+        의사 진료 시스템
+    </div>
+    <div id="doctor-name">김의사 님 환영합니다</div>
+</header>
 
-    <button onclick="location.href='/html/visit_waiting_list.html'">대기 환자 호출</button>
+<!-- 상단 카드 -->
+<div class="cards">
+    <div class="card yellow">
+        <div class="card-title">대기 중</div>
+        <div class="card-value" id="waiting-count">0명</div>
+    </div>
+    <div class="card blue">
+        <div class="card-title">진료 중</div>
+        <div class="card-value" id="on-treatment-count">0명</div>
+    </div>
+    <div class="card green">
+        <div class="card-title">완료</div>
+        <div class="card-value" id="done-count">0명</div>
+    </div>
 </div>
 
+<!-- 탭 메뉴 -->
+<div class="tabs">
+    <div class="tab active" data-tab="doctor_waiting">환자 대기열</div>
+    <div class="tab" data-tab="doctor_record">진료 기록</div>
+    <div class="tab" data-tab="doctor_prescription">처방 관리</div>
+    <div class="tab" data-tab="doctor_document">문서 발행</div>
+</div>
+
+<!-- 콘텐츠 영역 -->
+<div id="content-area"></div>
+
+
+<script>
+/* -------------------------------
+    상단 카드 카운트 로드
+------------------------------- */
+async function loadDashboardCounts() {
+    const res = await fetch("/api/visit/list");
+    const list = await res.json();
+
+    const waiting = list.filter(v => v.status === "WAITING").length;
+    const inTreatment = list.filter(v => v.status === "IN_TREATMENT").length;
+    const done = list.filter(v => v.status === "DONE").length;
+
+    document.getElementById("waiting-count").innerText = `${waiting}명`;
+    document.getElementById("on-treatment-count").innerText = `${inTreatment}명`;
+    document.getElementById("done-count").innerText = `${done}명`;
+}
+
+
+/* -------------------------------
+    HTML 로드 + 내부 SCRIPT 실행
+------------------------------- */
+function loadTabContent(file, extraParam = "") {
+
+    fetch(`/html/${file}.html${extraParam}`)
+        .then(res => res.text())
+        .then(html => {
+
+            const area = document.getElementById("content-area");
+            area.innerHTML = html;
+
+            // 내부 script 강제 실행
+            const scripts = area.querySelectorAll("script");
+            scripts.forEach(old => {
+                const newScript = document.createElement("script");
+                newScript.text = old.innerHTML;
+                document.body.appendChild(newScript);
+            });
+        });
+}
+
+
+/* -------------------------------
+    TAB CLICK
+------------------------------- */
+document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        const tabName = tab.dataset.tab;
+
+        if (tabName === "doctor_record") {
+            const visitId = sessionStorage.getItem("currentVisitId");
+
+            if (!visitId) {
+                alert("현재 선택된 환자가 없습니다.");
+                return;
+            }
+
+            loadTabContent("doctor_record", `?visitId=${visitId}`);
+
+        } else {
+            loadTabContent(tabName);
+        }
+    });
+});
+
+
+/* ------------------------------------------------
+   #record 해시가 있으면 자동으로 진료기록 탭 로드
+------------------------------------------------ */
+window.addEventListener("load", () => {
+
+    loadDashboardCounts();
+
+    if (location.hash === "#record") {
+        const visitId = sessionStorage.getItem("currentVisitId");
+
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.querySelector('.tab[data-tab="doctor_record"]').classList.add("active");
+
+        loadTabContent("doctor_record", `?visitId=${visitId}`);
+    } else {
+        loadTabContent("doctor_waiting");
+    }
+});
+</script>
+
 </body>
-<div id="header"></div>
 </html>

@@ -2,18 +2,203 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <title>간호사 업무 시스템</title>
+
     <link rel="stylesheet" href="/css/style.css">
-    <title>간호사 대시보드</title>
+
+    <style>
+        body { font-family: 'Pretendard', sans-serif; margin: 0; background: #f9fafb; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 30px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .cards {
+            display: flex;
+            gap: 15px;
+            padding: 20px 30px;
+        }
+
+        .card {
+            flex: 1;
+            background: #eef6ff;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .card.yellow { background: #fff8dc; }
+        .card.green { background: #eafff1; }
+        .card-title { color: #555; margin-bottom: 7px; }
+        .card-value { font-size: 22px; font-weight: 700; }
+
+        /* 탭 메뉴 */
+        .tabs {
+            display: flex;
+            padding: 10px 30px 0;
+            gap: 35px;
+            background: white;
+            border-bottom: 1px solid #d1d5db;
+            font-size: 17px;
+        }
+
+        .tab {
+            padding: 10px 4px 14px;
+            cursor: pointer;
+            color: #4b5563;
+        }
+
+        .tab.active {
+            font-weight: 700;
+            color: #22a45d;
+            border-bottom: 3px solid #22a45d;
+        }
+
+        /* 콘텐츠 영역 */
+        #content-area {
+            padding: 25px 30px;
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h2>간호사 메인</h2>
+<header>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <img src="/static/icon.svg" width="30">
+        간호사 업무 시스템
+    </div>
+    <div>로그아웃</div>
+</header>
 
-    <button onclick="location.href='/html/patient_register.html'">환자 등록</button>
-    <button onclick="location.href='/html/visit_waiting_list.html'">대기 환자 목록</button>
+<!-- 상단 카드 -->
+<div class="cards">
+    <div class="card">
+        <div class="card-title">총 접수</div>
+        <div class="card-value" id="total-count">0명</div>
+    </div>
+    <div class="card yellow">
+        <div class="card-title">대기 중</div>
+        <div class="card-value" id="waiting-count">0명</div>
+    </div>
+    <div class="card green">
+        <div class="card-title">진료 완료</div>
+        <div class="card-value" id="done-count">0명</div>
+    </div>
+    <div class="card" style="background:#f6e8ff;">
+        <div class="card-title">등록 환자</div>
+        <div class="card-value" id="patient-count">0명</div>
+    </div>
 </div>
 
+<!-- 탭 메뉴 -->
+<div class="tabs">
+    <div class="tab active" data-tab="patient_register">환자 등록</div>
+    <div class="tab" data-tab="visit_register">환자 접수</div>
+    <div class="tab" data-tab="nurse_treatment">처치 관리</div>
+    <div class="tab" data-tab="nurse_bill">수납 처리</div>
+    <div class="tab" data-tab="nurse_document">문서 조회</div>
+</div>
+
+<!-- 탭 콘텐츠 영역 -->
+<div id="content-area"></div>
+
+<script>
+/* ------------------------------------------
+   1) 탭 클릭 시 → HTML 불러와 삽입
+------------------------------------------ */
+document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        let file = tab.dataset.tab;
+        loadTabContent(file);
+    });
+});
+
+/* ------------------------------------------
+   2) HTML 파일 fetch → content-area에 삽입
+------------------------------------------ */
+function loadTabContent(file) {
+    fetch(`/html/${file}.html`)
+        .then(res => res.text())
+        .then(html => {
+            const contentArea = document.getElementById("content-area");
+            contentArea.innerHTML = html;
+
+            // script 실행
+            const scripts = contentArea.querySelectorAll("script");
+            scripts.forEach(scriptTag => {
+                const newScript = document.createElement("script");
+                newScript.text = scriptTag.innerHTML;
+                document.body.appendChild(newScript);
+                scriptTag.remove();
+            });
+
+            // 🔥 탭별 초기 함수 실행
+            if (file === "patient_register") {
+                if (typeof loadPatientRegisterList === "function") loadPatientRegisterList();
+            }
+            if (file === "visit_register") {
+                if (typeof loadVisitRegisterList === "function") loadVisitRegisterList();
+            }
+        });
+}
+
+
+
+/* ------------------------------------------
+   3) 환자 목록 불러오기 함수 (전역 등록)
+------------------------------------------ */
+function loadPatientList() {
+    fetch("/api/patient/list")
+        .then(res => res.json())
+        .then(list => renderPatientList(list))
+        .catch(err => console.error("환자 목록 오류:", err));
+}
+
+function renderPatientList(list) {
+    const area = document.getElementById("patient-list");
+    if (!area) return;
+
+    area.innerHTML = "";
+
+    list.forEach(p => {
+        area.innerHTML += `
+            <div style="padding:15px 10px; border-bottom:1px solid #e5e7eb;">
+                <strong>${p.name}</strong>
+                <span style="color:#22a45d; font-size:12px;">(${p.gender})</span><br>
+                차트번호: ${p.chartNo}<br>
+                생년월일: ${p.birthdate}<br>
+                연락처: ${p.phone}<br>
+                주소: ${p.address}
+            </div>
+        `;
+    });
+}
+
+/* ------------------------------------------
+   4) 신규 등록 버튼
+------------------------------------------ */
+function openPatientRegister() {
+    loadTabContent("patient_register_form");
+}
+
+/* ------------------------------------------
+   5) 첫 로딩 → 환자등록 탭 표시
+------------------------------------------ */
+loadTabContent("patient_register");
+
+</script>
+
 </body>
-<div id="header"></div>
 </html>

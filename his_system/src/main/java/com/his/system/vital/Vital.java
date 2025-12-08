@@ -1,5 +1,6 @@
 package com.his.system.vital;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.his.system.visit.Visit;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,8 +21,9 @@ public class Vital {
     private Long id;
 
     // VISIT FK (정상)
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "VISIT_ID", nullable = false)
+    @JsonIgnoreProperties({"vital"})
     private Visit visit;
 
     // NURSE ID → 단순 Long 값

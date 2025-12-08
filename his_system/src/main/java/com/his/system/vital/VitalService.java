@@ -18,7 +18,7 @@ public class VitalService {
     private final VisitRepository visitRepository;
     private final StaffRepository staffRepository;
 
-    // 바이탈 입력
+    // 🟦 바이탈 입력
     public Vital createVital(Long visitId, Long nurseId, Vital vitalData) {
 
         Visit visit = visitRepository.findById(visitId)
@@ -43,16 +43,19 @@ public class VitalService {
         return vitalRepository.save(vital);
     }
 
-    // 내원별 바이탈 목록 조회
+    // 🟦 방문별 모든 Vital 목록
     public List<Vital> getVitalsByVisit(Long visitId) {
-        return vitalRepository.findAll().stream()
-                .filter(v -> v.getVisit().getId().equals(visitId))
-                .toList();
+        return vitalRepository.findAllByVisitIdOrderByMeasuredAtDesc(visitId);
     }
 
-    // 바이탈 상세 조회
+    // 🟦 단일 Vital 조회
     public Vital getVital(Long id) {
         return vitalRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("바이탈 데이터 없음"));
+    }
+
+    // 🟦 최신 Vital 조회 (가장 중요)
+    public Vital getLatestByVisit(Long visitId) {
+        return vitalRepository.findTopByVisitIdOrderByMeasuredAtDesc(visitId);
     }
 }
