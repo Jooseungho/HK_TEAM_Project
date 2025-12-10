@@ -1,4 +1,4 @@
-async function login() {
+/*async function login() {
     const staffId = document.getElementById("staffId").value;
     const password = document.getElementById("password").value;
 
@@ -25,3 +25,4 @@ async function login() {
         location.href = "/html/admin_dashboard.html";
     }
 }
+*/

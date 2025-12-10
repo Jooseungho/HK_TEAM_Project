@@ -1,4 +1,4 @@
-async function loadWaitingList() {
+/*async function loadWaitingList() {
     const res = await fetch("/api/visit/waiting_list");
     const list = await res.json();
 
@@ -39,3 +39,4 @@ async function callPatient(visitId) {
     }
 }
 
+*/

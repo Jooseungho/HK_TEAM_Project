@@ -3,6 +3,8 @@ package com.his.system.visit;
 import com.his.system.patient.Patient;
 import com.his.system.patient.PatientRepository;
 import com.his.system.visit.dto.VisitRequest;
+import com.his.system.vital.Vital;
+import com.his.system.vital.VitalService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,12 +19,18 @@ public class VisitService {
     private final VisitRepository visitRepo;
     private final PatientRepository patientRepo;
 
-    // 접수 등록
+    // 🔥 새로 추가
+    private final VitalService vitalService;
+
+    // 접수 등록 (Visit + Vital 함께 저장)
+    @Transactional
     public Visit registerVisit(VisitRequest request) {
 
+        // 1) 환자 찾기
         Patient p = patientRepo.findById(request.getPatientId())
                 .orElseThrow(() -> new RuntimeException("환자 없음"));
 
+        // 2) VISIT 생성 & 저장
         Visit v = Visit.builder()
                 .patient(p)
                 .doctorId(null)
@@ -30,7 +38,24 @@ public class VisitService {
                 .arrivalTime(LocalDateTime.now())
                 .build();
 
-        return visitRepo.save(v);
+        v = visitRepo.save(v);   // ID 확보
+
+        // 3) VITAL 생성 & 저장 (VitalService 재사용)
+        Vital vitalData = Vital.builder()
+                .bpSystolic(request.getBpSystolic())
+                .bpDiastolic(request.getBpDiastolic())
+                .heartRate(request.getHeartRate())
+                .temperature(request.getTemperature())
+                .respiration(request.getRespiration())
+                .spo2(request.getSpo2())
+                .memo(request.getMemo())
+                .build();
+
+        // nurseId 검증까지 VitalService.createVital 안에서 처리됨
+        vitalService.createVital(v.getId(), request.getNurseId(), vitalData);
+
+        // 4) 프론트에는 Visit 정보만 그대로 리턴
+        return v;
     }
 
     // 대기 목록

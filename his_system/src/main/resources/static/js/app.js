@@ -1,4 +1,4 @@
-function getToken() {
+/*function getToken() {
     return localStorage.getItem("token");
 }
 
@@ -16,4 +16,4 @@ async function apiGet(url) {
         }
     }).then(res => res.json());
 }
-
+*/

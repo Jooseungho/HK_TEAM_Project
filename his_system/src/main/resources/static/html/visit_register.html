@@ -234,7 +234,6 @@ function filterVisitPatients() {
 
     renderVisitPatients(filtered);
 }
-
 async function submitVisit() {
     if (!window.selectedVisitPatient) {
         alert("환자를 먼저 선택해주세요.");
@@ -247,25 +246,54 @@ async function submitVisit() {
     const symptom = document.getElementById("symptom").value.trim();
     const history = document.getElementById("history").value.trim();
 
+    // -----------------------------
+    // 1) 필수값 검증
+    // -----------------------------
     if (!bp || !pulse || !temperature) {
         alert("필수 항목(혈압/맥박/체온)을 입력해주세요.");
         return;
     }
 
-    const [bpSystolic, bpDiastolic] = bp.split("/").map(v => parseInt(v));
+    // BP 입력 검증
+    if (!bp.includes("/")) {
+        alert("혈압은 '120/80' 형식으로 입력해주세요.");
+        return;
+    }
 
+    // -----------------------------
+    // 2) BP 파싱
+    // -----------------------------
+    const [sysStr, diaStr] = bp.split("/").map(v => v.trim());
+    const bpSystolic = parseInt(sysStr);
+    const bpDiastolic = parseInt(diaStr);
+
+    if (isNaN(bpSystolic) || isNaN(bpDiastolic)) {
+        alert("혈압 형식이 잘못되었습니다. 예: 120/80");
+        return;
+    }
+
+    // -----------------------------
+    // 3) 서버 전송 데이터 구성
+    // -----------------------------
     const requestBody = {
         patientId: window.selectedVisitPatient.id,
-        nurseId: 1,
+        nurseId: 1,                          // 로그인 연동 전까지 1 고정
         bpSystolic,
         bpDiastolic,
         heartRate: parseInt(pulse),
         temperature: parseFloat(temperature),
-        memo: symptom + "\n" + history
+        memo: (symptom + "\n" + history).trim(),
+
+        // 필요 시 확장 가능 (지금은 null 저장됨)
+        respiration: null,
+        spo2: null
     };
 
     console.log("📡 전송 데이터:", requestBody);
 
+    // -----------------------------
+    // 4) 서버 요청 + Vital 완성될 때까지 잠깐 기다리기
+    // -----------------------------
     try {
         const response = await fetch("/api/visit/register", {
             method: "POST",
@@ -273,16 +301,32 @@ async function submitVisit() {
             body: JSON.stringify(requestBody)
         });
 
-        if (response.ok) {
-            alert("접수가 완료되었습니다!");
-            location.reload();
-        } else {
+        if (!response.ok) {
             alert("저장 실패: " + await response.text());
+            return;
         }
+
+        // -----------------------------
+        // 5) 트랜잭션 완료 대기 (Vital → DB 반영 시간 확보)
+        // -----------------------------
+        await new Promise(r => setTimeout(r, 350));
+
+        alert("접수가 완료되었습니다!");
+
+        // 이제 reload 하더라도 Vital 정보가 완전히 반영됨
+        location.reload();
+
     } catch (err) {
         console.error(err);
         alert("서버 오류 발생");
     }
+}
+
+
+function initVisitRegisterPage() {
+    loadPatients();
+    loadReceptionList();
+    loadWaitingList();
 }
 
 

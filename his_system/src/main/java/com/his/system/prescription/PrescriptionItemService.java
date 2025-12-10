@@ -7,25 +7,29 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PrescriptionItemService {
 
-    private final PrescriptionItemRepository itemRepository;
     private final PrescriptionRepository prescriptionRepository;
+    private final PrescriptionItemRepository itemRepository;
 
-    // 처방 항목 추가
-    public PrescriptionItem addItem(Long prescriptionId, PrescriptionItem data) {
+    public Prescription addItem(Long prescriptionId, PrescriptionItem itemReq) {
 
         Prescription prescription = prescriptionRepository.findById(prescriptionId)
-                .orElseThrow(() -> new RuntimeException("처방 없음"));
+                .orElseThrow(() -> new RuntimeException("처방 정보 없음"));
 
+        // 처방 항목 엔티티 생성
         PrescriptionItem item = PrescriptionItem.builder()
                 .prescription(prescription)
-                .itemType(data.getItemType())
-                .itemName(data.getItemName())
-                .dosage(data.getDosage())
-                .frequency(data.getFrequency())
-                .duration(data.getDuration())
-                .note(data.getNote())
+                .itemType(itemReq.getItemType())
+                .itemName(itemReq.getItemName())
+                .dosage(itemReq.getDosage())
+                .frequency(itemReq.getFrequency())
+                .duration(itemReq.getDuration())
+                .note(itemReq.getNote())
                 .build();
 
-        return itemRepository.save(item);
+        // 리스트에 추가
+        prescription.getItems().add(item);
+
+        return prescriptionRepository.save(prescription);
     }
 }
+

@@ -1,80 +1,104 @@
-<h2>진료 기록</h2>
+<h2 style="font-size:26px; font-weight:700; margin-bottom:15px;">진료 기록</h2>
 
-<div id="patient-box"></div>
-<div id="vital-box"></div>
+<div id="patient-info" style="margin-bottom:25px;"></div>
 
-<h3>SOAP 진료 기록</h3>
+<!-- SOAP 입력 영역 -->
+<div style="background:white; padding:20px; border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.06);">
 
-<textarea id="subjective" placeholder="주관적 증상"></textarea>
-<textarea id="objective" placeholder="객관적 조건"></textarea>
-<textarea id="assessment" placeholder="평가/진단"></textarea>
-<textarea id="plan" placeholder="치료 계획"></textarea>
+    <label>Subjective (환자 호소)</label>
+    <textarea id="s" style="width:100%; height:80px; margin-bottom:15px;"></textarea>
 
-<label>진단명 *</label>
-<input id="diagnosisName">
+    <label>Objective (의사 관찰)</label>
+    <textarea id="o" style="width:100%; height:80px; margin-bottom:15px;"></textarea>
 
-<label>ICD10 코드 *</label>
-<input id="icd10Code">
+    <label>Assessment (의사 판단)</label>
+    <textarea id="a" style="width:100%; height:80px; margin-bottom:15px;"></textarea>
 
-<button onclick="saveRecord()">임시 저장</button>
-<button onclick="completeTreat()">진료 완료</button>
+    <label>Plan (치료 계획)</label>
+    <textarea id="p" style="width:100%; height:80px; margin-bottom:25px;"></textarea>
+
+    <label>진단명</label>
+    <input id="diagnosis" type="text" style="width:100%; padding:10px; margin-bottom:15px;">
+
+    <label>ICD-10 코드</label>
+    <input id="icd" type="text" style="width:100%; padding:10px; margin-bottom:25px;">
+
+    <button onclick="saveRecord()"
+        style="width:100%; padding:15px; background:#2563eb; color:white; border:none;
+               border-radius:12px; font-size:18px; cursor:pointer;">
+        진료 완료
+    </button>
+</div>
 
 <script>
-const visitId = new URLSearchParams(location.search).get("visitId");
-const doctorId = 1;
+// -----------------------------------------------------
+// 🔵 환자 정보 + 최신 vital + 과거 진료 로드
+// -----------------------------------------------------
+async function loadRecordPage() {
 
-async function loadDetail() {
-    const res = await fetch(`/api/visit/${visitId}/detail`);
-    const data = await res.json();
-
-    const p = data.patient;
-    const v = data.vital;
-
-    document.getElementById("patient-box").innerHTML = `
-        <h3>${p.name} (${p.chartNo})</h3>
-    `;
-
-    document.getElementById("vital-box").innerHTML = `
-        혈압: ${v?.bpSystolic}/${v?.bpDiastolic}<br>
-        맥박: ${v?.heartRate} bpm<br>
-        체온: ${v?.temperature}℃
-    `;
-}
-
-async function saveRecord() {
-
-    const body = {
-        subjective: subjective.value,
-        objective: objective.value,
-        assessment: assessment.value,
-        plan: plan.value,
-        diagnosisName: diagnosisName.value,
-        icd10Code: icd10Code.value
-    };
-
-    await fetch(`/api/record/create?visitId=${visitId}&doctorId=${doctorId}`, {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(body)
-    });
-
-    alert("임시 저장 완료");
-}
-
-async function completeTreat() {
-
-    if (!diagnosisName.value || !icd10Code.value) {
-        alert("진단명과 ICD10 코드는 필수입니다.");
+    if (!visitId) {
+        alert("선택된 환자가 없습니다.");
         return;
     }
 
-    await saveRecord();
+    const res = await fetch(`/api/visit/${visitId}/detail`);
+    const data = await res.json();
 
-    await fetch(`/api/visit/${visitId}/complete`, { method:"POST" });
+    const visit = data.visit;
+    const patient = data.patient;
+    const vital = data.vital ?? {};
+
+    document.getElementById("patient-info").innerHTML = `
+        <div style="background:white; padding:20px; border-radius:12px;
+                    box-shadow:0 3px 10px rgba(0,0,0,0.06); margin-bottom:20px;">
+            <h3 style="margin-bottom:10px; font-size:20px;">${patient.name}</h3>
+            <div>차트번호: ${patient.chartNo}</div>
+            <div>성별: ${patient.gender} / 생년월일: ${patient.birthdate}</div>
+            <div style="margin-top:10px; font-weight:700;">Vital Signs</div>
+            <div>혈압: ${vital.bpSystolic ?? '-'} / ${vital.bpDiastolic ?? '-'}</div>
+            <div>맥박: ${vital.heartRate ?? '-'} bpm</div>
+            <div>체온: ${vital.temperature ?? '-'} ℃</div>
+            <div style="margin-top:10px;">증상: ${vital.memo ?? '-'}</div>
+        </div>
+    `;
+}
+
+
+
+// -----------------------------------------------------
+// 🔵 SOAP + 진단 저장 후 visit 상태 DONE 처리
+// -----------------------------------------------------
+async function saveRecord() {
+
+    const body = {
+        visitId: visitId,
+        subjective: document.getElementById("s").value,
+        objective: document.getElementById("o").value,
+        assessment: document.getElementById("a").value,
+        plan: document.getElementById("p").value,
+        diagnosis: document.getElementById("diagnosis").value,
+        icdCode: document.getElementById("icd").value
+    };
+
+    // 1) SOAP 저장
+    await fetch("/api/record/save", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body)
+    });
+
+    // 2) Visit → 완료 처리
+    await fetch(`/api/visit/${visitId}/complete`, {
+        method: "POST"
+    });
 
     alert("진료가 완료되었습니다.");
+
+    // 다시 대기열로 이동
     location.href = "/html/doctor_dashboard.html";
 }
 
-loadDetail();
+
+// 실행
+loadRecordPage();
 </script>

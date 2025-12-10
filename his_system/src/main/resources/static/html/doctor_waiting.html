@@ -6,6 +6,9 @@
 <div id="waiting-list"></div>
 
 <script>
+// -----------------------------------------------------
+// 🔵 대기 환자 목록 로드
+// -----------------------------------------------------
 async function loadDoctorWaiting() {
     const res = await fetch("/api/visit/waiting_list");
     const list = await res.json();
@@ -22,9 +25,12 @@ async function loadDoctorWaiting() {
 
         const name = p.name ?? "-";
         const chartNo = p.chartNo ?? "-";
-        const time = item.arrivalTime ? item.arrivalTime.substring(11,16) : "-";
+        const time = item.arrivalTime ? item.arrivalTime.substring(11, 16) : "-";
 
-        const bp = (v.bpSystolic && v.bpDiastolic) ? `${v.bpSystolic}/${v.bpDiastolic}` : "-";
+        const bp = (v.bpSystolic && v.bpDiastolic)
+            ? `${v.bpSystolic}/${v.bpDiastolic}`
+            : "-";
+
         const pulse = v.heartRate ?? "-";
         const temp = v.temperature ?? "-";
         const symptom = v.memo ?? "-";
@@ -57,6 +63,7 @@ async function loadDoctorWaiting() {
                         </div>
                     </div>
 
+                    <!-- 🔵 호출 버튼: callPatient() 실행 -->
                     <button onclick="callPatient(${item.id})"
                         style="
                             background:#2563eb;
@@ -102,15 +109,36 @@ async function loadDoctorWaiting() {
     });
 }
 
+
+// -----------------------------------------------------
+// 🔵 환자 호출(callPatient)
+//    → Visit 상태 "IN_TREATMENT" 로 변경
+//    → currentVisitId 저장
+//    → 의사 대시보드로 이동 후 #record 탭 실행
+// -----------------------------------------------------
 async function callPatient(visitId) {
 
-    await fetch(`/api/visit/call/${visitId}/1`, { method: "POST" });
+    const doctorId = 1; // 로그인된 의사 ID (임시)
 
+    const res = await fetch(`/api/visit/call/${visitId}/${doctorId}`, {
+        method: "POST"
+    });
+
+    if (!res.ok) {
+        alert("환자 호출 실패!");
+        return;
+    }
+
+    // 선택한 환자 저장
     sessionStorage.setItem("currentVisitId", visitId);
 
+    // 기록 탭 자동 실행
     location.href = "/html/doctor_dashboard.html#record";
 }
 
-// 실행
+
+// -----------------------------------------------------
+// 🔵 실행
+// -----------------------------------------------------
 loadDoctorWaiting();
 </script>

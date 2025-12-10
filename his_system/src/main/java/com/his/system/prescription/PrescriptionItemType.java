@@ -4,5 +4,6 @@ public enum PrescriptionItemType {
     DRUG,
     INJECTION,
     TEST,
-    PROCEDURE
+    PROCEDURE,
+    TREATMENT   // ← 추가
 }

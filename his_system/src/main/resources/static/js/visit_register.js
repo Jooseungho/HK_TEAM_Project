@@ -1,15 +1,15 @@
 /* =========================================================
     공통 전역변수
 ========================================================= */
-let selectedPatientId = null;     // 환자 선택
+/*let selectedPatientId = null;     // 환자 선택
 let selectedVisitId = null;       // 호출된 visitId 저장
 const selectedNurseId = 1;        // 로그인 기능 도입 전 임시
-
+*/
 
 /* =========================================================
     1) 환자 목록 로드 (좌측 패널)
 ========================================================= */
-async function loadPatients() {
+/*async function loadPatients() {
     const res = await fetch("/api/patient/list");
     const list = await res.json();
 
@@ -33,10 +33,10 @@ async function loadPatients() {
 }
 
 
-/* =========================================================
+*//* =========================================================
     2) 환자 선택
 ========================================================= */
-function selectPatient(div, patient) {
+/*function selectPatient(div, patient) {
     document.querySelectorAll(".patient-list .item")
         .forEach(e => e.classList.remove("selected"));
 
@@ -54,10 +54,10 @@ function selectPatient(div, patient) {
 }
 
 
-/* =========================================================
+*//* =========================================================
     3) 오늘 접수 현황 로드
 ========================================================= */
-async function loadReceptionList() {
+/*async function loadReceptionList() {
     const res = await fetch("/api/visit/today");
     if (!res.ok) return;
 
@@ -83,10 +83,10 @@ async function loadReceptionList() {
 }
 
 
-/* =========================================================
+*//* =========================================================
     4) Vital + 접수 등록
 ========================================================= */
-document.getElementById("submitBtn")?.addEventListener("click", async () => {
+/*document.getElementById("submitBtn")?.addEventListener("click", async () => {
 
     if (!selectedPatientId) {
         alert("환자를 선택해주세요");
@@ -127,10 +127,10 @@ document.getElementById("submitBtn")?.addEventListener("click", async () => {
 });
 
 
-/* =========================================================
+*//* =========================================================
     5) 대기 환자 목록 로드 (중앙 패널)
 ========================================================= */
-async function loadWaitingList() {
+/*async function loadWaitingList() {
     const res = await fetch("/api/visit/waiting_list");
     const list = await res.json();
 
@@ -156,10 +156,10 @@ async function loadWaitingList() {
 }
 
 
-/* =========================================================
+*//* =========================================================
     6) 환자 호출 기능
 ========================================================= */
-async function callPatient(visitId) {
+/*async function callPatient(visitId) {
     const doctorId = 1; // 로그인 후 수정
 
     const res = await fetch(`/api/visit/call/${visitId}/${doctorId}`, {
@@ -178,10 +178,10 @@ async function callPatient(visitId) {
 }
 
 
-/* =========================================================
+*//* =========================================================
     7) 우측 패널: 호출된 환자 표시
 ========================================================= */
-async function displaySelectedPatient(visitId) {
+/*async function displaySelectedPatient(visitId) {
     const res = await fetch(`/api/visit/${visitId}`);
     const v = await res.json();
 
@@ -198,10 +198,10 @@ async function displaySelectedPatient(visitId) {
 }
 
 
-/* =========================================================
+*//* =========================================================
     8) 호출된 행 강조 (파란색 highlight)
 ========================================================= */
-function highlightCalledRow(visitId) {
+/*function highlightCalledRow(visitId) {
     document.querySelectorAll("#waitingList tr").forEach(row => {
         row.classList.remove("called-row");
     });
@@ -211,10 +211,10 @@ function highlightCalledRow(visitId) {
 }
 
 
-/* =========================================================
+*//* =========================================================
     9) 진료 시작 / 종료
 ========================================================= */
-async function startTreatment() {
+/*async function startTreatment() {
     if (!selectedVisitId) return alert("먼저 환자를 호출하세요.");
 
     await fetch(`/api/visit/start/${selectedVisitId}`, { method: "POST" });
@@ -229,11 +229,11 @@ async function finishTreatment() {
 }
 
 
-/* =========================================================
+*//* =========================================================
     10) 초기 로드
 ========================================================= */
-window.onload = () => {
+/*window.onload = () => {
     loadPatients();
     loadReceptionList();
     loadWaitingList();
-};
+};*/

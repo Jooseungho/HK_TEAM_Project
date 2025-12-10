@@ -5,6 +5,8 @@ import com.his.system.staff.Staff;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "PRESCRIPTION")
@@ -20,12 +22,10 @@ public class Prescription {
     @Column(name = "PRESCRIPTION_ID")
     private Long id;
 
-    // VISIT FK
     @ManyToOne
     @JoinColumn(name = "VISIT_ID", nullable = false)
     private Visit visit;
 
-    // DOCTOR FK
     @ManyToOne
     @JoinColumn(name = "DOCTOR_ID", nullable = false)
     private Staff doctor;
@@ -42,4 +42,13 @@ public class Prescription {
 
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
+
+
+    // ------------------------------------------------
+    // ⭐ 반드시 추가해야 하는 부분 (items 리스트 + 초기화)
+    // ------------------------------------------------
+    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PrescriptionItem> items = new ArrayList<>();
+
 }

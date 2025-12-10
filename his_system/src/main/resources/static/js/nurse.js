@@ -1,4 +1,4 @@
-async function registerPatient() {
+/*async function registerPatient() {
     const patient = {
         name: document.getElementById("name").value,
         rrn: document.getElementById("rrn").value,
@@ -23,5 +23,5 @@ async function registerPatient() {
     }
 
     alert("환자 등록 완료!");
-    location.href = "/html/nurse_dashboard.html";
-}
+	location.href = "/nurse/dashboard";
+}*/

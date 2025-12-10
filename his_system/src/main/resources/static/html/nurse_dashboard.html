@@ -121,6 +121,7 @@ document.querySelectorAll(".tab").forEach(tab => {
         tab.classList.add("active");
 
         let file = tab.dataset.tab;
+        console.log(file);
         loadTabContent(file);
     });
 });
@@ -149,8 +150,9 @@ function loadTabContent(file) {
                 if (typeof loadPatientRegisterList === "function") loadPatientRegisterList();
             }
             if (file === "visit_register") {
-                if (typeof loadVisitRegisterList === "function") loadVisitRegisterList();
+                if (typeof initVisitRegisterPage === "function") initVisitRegisterPage();
             }
+
         });
 }
 

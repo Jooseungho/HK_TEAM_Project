@@ -64,14 +64,14 @@
 
 <!-- 콘텐츠 영역 -->
 <div id="content-area"></div>
-
-
 <script>
 /* -------------------------------
     상단 카드 카운트 로드
 ------------------------------- */
 async function loadDashboardCounts() {
     const res = await fetch("/api/visit/list");
+    if (!res.ok) return;
+
     const list = await res.json();
 
     const waiting = list.filter(v => v.status === "WAITING").length;
@@ -83,77 +83,94 @@ async function loadDashboardCounts() {
     document.getElementById("done-count").innerText = `${done}명`;
 }
 
-
 /* -------------------------------
-    HTML 로드 + 내부 SCRIPT 실행
+   HTML 로드 + 내부 script 실행
 ------------------------------- */
+/* ------------------------------------
+HTML 로드 + 내부 script 실행 (중복 제거)
+------------------------------------- */
 function loadTabContent(file, extraParam = "") {
 
-    fetch(`/html/${file}.html${extraParam}`)
-        .then(res => res.text())
-        .then(html => {
+ fetch(`/html/${file}.html`)
+     .then(res => res.text())
+     .then(html => {
+         const area = document.getElementById("content-area");
+         area.innerHTML = html;
 
-            const area = document.getElementById("content-area");
-            area.innerHTML = html;
+         /* 🔥 기존에 body에 붙어있던 이전 스크립트 제거 */
+         document.querySelectorAll("script[data-dynamic='yes']")
+             .forEach(s => s.remove());
 
-            // 내부 script 강제 실행
-            const scripts = area.querySelectorAll("script");
-            scripts.forEach(old => {
-                const newScript = document.createElement("script");
-                newScript.text = old.innerHTML;
-                document.body.appendChild(newScript);
-            });
-        });
+         /* 페이지 내부 script 다시 실행 */
+         const scripts = area.querySelectorAll("script");
+
+         scripts.forEach(oldScript => {
+             let code = oldScript.innerHTML;
+
+             // visitId 전달
+             if (
+                 (file === "doctor_record" || file === "doctor_prescription") &&
+                 extraParam.startsWith("?visitId=")
+             ) {
+                 const visitId = extraParam.replace("?visitId=", "");
+                 code = `window.visitId=${visitId};\n` + code;
+             }
+
+             // 새 script 생성
+             const newScript = document.createElement("script");
+             newScript.setAttribute("data-dynamic", "yes"); // 나중에 제거 가능하게 표시
+             newScript.text = code;
+
+             document.body.appendChild(newScript);
+         });
+     });
 }
 
 
 /* -------------------------------
-    TAB CLICK
+    탭 클릭 → 화면 교체
 ------------------------------- */
 document.querySelectorAll(".tab").forEach(tab => {
     tab.addEventListener("click", () => {
-
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
 
         const tabName = tab.dataset.tab;
+        const currentVisitId = sessionStorage.getItem("currentVisitId");
 
-        if (tabName === "doctor_record") {
-            const visitId = sessionStorage.getItem("currentVisitId");
-
-            if (!visitId) {
+        // 진료 기록 / 처방 관리 탭은 visitId 필요
+        if (tabName === "doctor_record" || tabName === "doctor_prescription") {
+            if (!currentVisitId) {
                 alert("현재 선택된 환자가 없습니다.");
                 return;
             }
-
-            loadTabContent("doctor_record", `?visitId=${visitId}`);
-
+            loadTabContent(tabName, `?visitId=${currentVisitId}`);
         } else {
             loadTabContent(tabName);
         }
     });
 });
 
-
 /* ------------------------------------------------
-   #record 해시가 있으면 자동으로 진료기록 탭 로드
+   페이지 로딩 시
 ------------------------------------------------ */
 window.addEventListener("load", () => {
-
     loadDashboardCounts();
 
-    if (location.hash === "#record") {
-        const visitId = sessionStorage.getItem("currentVisitId");
+    const visitId = sessionStorage.getItem("currentVisitId");
 
+    if (location.hash === "#record" && visitId) {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         document.querySelector('.tab[data-tab="doctor_record"]').classList.add("active");
-
         loadTabContent("doctor_record", `?visitId=${visitId}`);
     } else {
         loadTabContent("doctor_waiting");
     }
 });
 </script>
+
+	
+
 
 </body>
 </html>

@@ -1,10 +1,299 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>처방 관리</title>
-</head>
-<body>
+<h2 style="font-size:26px; font-weight:700; margin-bottom:15px;">처방 관리</h2>
 
-</body>
-</html>
+<!-- 🔵 현재 진료 중 환자 정보 -->
+<div id="patient-info-box" style="
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom:25px;
+">
+    환자 정보를 불러오는 중입니다...
+</div>
+
+<!-- -------------------------------
+      약물 처방 입력 폼
+-------------------------------- -->
+<div style="background:white; padding:25px; border-radius:12px; margin-bottom:25px;">
+    <h3 style="margin-bottom:20px;">💊 약물 처방</h3>
+
+    <div class="form-row">
+        <div style="flex:1;">
+            <label>약품명</label>
+            <select id="drugName" style="width:100%; padding:10px;">
+                <option value="">선택하세요</option>
+                <option value="타이레놀 500mg">타이레놀 500mg</option>
+                <option value="해열제">해열제</option>
+                <option value="진해거담제">진해거담제</option>
+            </select>
+        </div>
+
+        <div style="flex:1;">
+            <label>용량</label>
+            <input id="dosage" placeholder="예: 500mg" style="width:100%; padding:10px;">
+        </div>
+    </div>
+
+    <div class="form-row" style="margin-top:15px;">
+        <div style="flex:1;">
+            <label>투약 횟수</label>
+            <select id="doseCount" style="width:100%; padding:10px;">
+                <option value="1일 1회">1일 1회</option>
+                <option value="1일 2회">1일 2회</option>
+                <option value="1일 3회">1일 3회</option>
+            </select>
+        </div>
+
+        <div style="flex:1;">
+            <label>투약 기간</label>
+            <select id="doseDays" style="width:100%; padding:10px;">
+                <option value="3">3일</option>
+                <option value="5">5일</option>
+                <option value="7">7일</option>
+            </select>
+        </div>
+
+        <div style="flex:1;">
+            <label>총 투약량</label>
+            <input id="totalAmount" disabled style="width:100%; padding:10px;">
+        </div>
+    </div>
+
+    <button onclick="addDrug()" style="
+        margin-top:15px; padding:12px; width:100%;
+        background:#2563eb; color:white; border:none;
+        border-radius:8px; cursor:pointer;">
+        + 약물 추가
+    </button>
+
+    <div id="drug-list" style="margin-top:15px; background:#f8fafc; padding:15px; border-radius:8px;">
+        약물이 없습니다.
+    </div>
+</div>
+
+<!-- -------------------------------
+      주사 / 처치 입력 폼
+-------------------------------- -->
+<div style="background:white; padding:25px; border-radius:12px; margin-bottom:30px;">
+    <h3 style="margin-bottom:20px;">💉 주사 및 처치</h3>
+
+    <div class="form-row">
+        <div style="flex:1;">
+            <label>처치 유형</label>
+            <select id="treatType" style="width:100%; padding:10px;">
+                <option value="주사">주사</option>
+                <option value="처치">처치</option>
+            </select>
+        </div>
+
+        <div style="flex:1;">
+            <label>처치명</label>
+            <input id="treatName" placeholder="예: X-ray 촬영, 비타민 주사" style="width:100%; padding:10px;">
+        </div>
+    </div>
+
+    <div style="margin-top:15px;">
+        <label>특이사항</label>
+        <textarea id="treatMemo" rows="2" style="width:100%; padding:10px;"></textarea>
+    </div>
+
+    <button onclick="addTreatment()" style="
+        margin-top:15px; padding:12px; width:100%;
+        background:#16a34a; color:white; border:none;
+        border-radius:8px; cursor:pointer;">
+        + 처치 추가
+    </button>
+
+    <div id="treatment-list" style="margin-top:15px; background:#f8fafc; padding:15px; border-radius:8px;">
+        처치 내역이 없습니다.
+    </div>
+</div>
+
+<!-- -------------------------------
+        전체 저장 버튼
+-------------------------------- -->
+<button onclick="saveAll()" style="
+    width:100%; padding:14px; background:#2563eb;
+    color:white; border:none; border-radius:10px;
+    font-size:18px; cursor:pointer;">
+    처방 저장 및 간호사에게 전달
+</button>
+
+<script>
+let drugList = [];
+let treatmentList = [];
+
+/* ---------------------------
+   🔵 환자 정보 불러오기
+--------------------------- */
+async function loadPatientInfo() {
+    const visitId = sessionStorage.getItem("currentVisitId");
+    if (!visitId) return;
+
+    const res = await fetch(`/api/visit/${visitId}/detail`);
+    if (!res.ok) {
+        document.getElementById("patient-info-box").innerText = "환자 정보를 불러오지 못했습니다.";
+        return;
+    }
+
+    const data = await res.json();
+    const p = data.patient;
+    const v = data.vital || {};
+
+    document.getElementById("patient-info-box").innerHTML = `
+        <div style="font-size:20px; font-weight:700; margin-bottom:10px;">
+            ${p.name} &nbsp; <span style="color:#6b7280;">(${p.chartNo})</span>
+        </div>
+
+        <div style="color:#444; margin-bottom:8px;">
+            생년월일: ${p.birthdate} | 연락처: ${p.phone}
+        </div>
+
+        <div style="
+            background:#f8fafc; padding:15px; border-radius:10px;
+            margin-top:12px; display:flex; gap:40px;
+        ">
+            <div><b>혈압</b><br>${v.bpSystolic ?? "-"} / ${v.bpDiastolic ?? "-"}</div>
+            <div><b>맥박</b><br>${v.heartRate ?? "-"} bpm</div>
+            <div><b>체온</b><br>${v.temperature ?? "-"}℃</div>
+            <div><b>증상</b><br>${v.memo ?? "-"}</div>
+        </div>
+    `;
+}
+
+/* ---------------------------
+   💊 약물 추가 / 렌더링
+--------------------------- */
+function addDrug() {
+    const name = document.getElementById("drugName").value.trim();
+    const dosage = document.getElementById("dosage").value.trim();
+    const doseCount = document.getElementById("doseCount").value;
+    const doseDays = parseInt(document.getElementById("doseDays").value);
+
+    if (!name || !dosage) {
+        alert("약품명과 용량은 필수입니다.");
+        return;
+    }
+
+    const cnt = parseInt(doseCount.replace(/[^0-9]/g, "")); // '1일 3회' → 3
+    const total = cnt * doseDays;
+
+    const item = { name, dosage, doseCount, doseDays, total };
+    drugList.push(item);
+    renderDrugList();
+}
+
+function renderDrugList() {
+    const area = document.getElementById("drug-list");
+
+    if (drugList.length === 0) {
+        area.innerHTML = "약물이 없습니다.";
+        return;
+    }
+
+    area.innerHTML = "";
+    drugList.forEach((d, idx) => {
+        area.innerHTML += `
+            <div style="padding:10px; background:white; border-radius:8px; margin-bottom:10px;">
+                <strong>${d.name}</strong> (${d.dosage})<br>
+                투약: ${d.doseCount} / 기간: ${d.doseDays}일<br>
+                <span style="color:#2563eb;">총 ${d.total}회 투약</span>
+                <button onclick="deleteDrug(${idx})"
+                    style="float:right; margin-top:-25px; padding:4px 10px;
+                           background:#ef4444; color:white; border:none;
+                           border-radius:6px; cursor:pointer;">
+                    삭제
+                </button>
+            </div>
+        `;
+    });
+}
+
+function deleteDrug(idx) {
+    drugList.splice(idx, 1);
+    renderDrugList();
+}
+
+/* ---------------------------
+   💉 처치 추가 / 렌더링
+--------------------------- */
+function addTreatment() {
+    const type = document.getElementById("treatType").value;
+    const name = document.getElementById("treatName").value.trim();
+    const memo = document.getElementById("treatMemo").value.trim();
+
+    if (!name) {
+        alert("처치명을 입력하세요.");
+        return;
+    }
+
+    const item = { type, name, memo };
+    treatmentList.push(item);
+    renderTreatmentList();
+}
+
+function renderTreatmentList() {
+    const area = document.getElementById("treatment-list");
+
+    if (treatmentList.length === 0) {
+        area.innerHTML = "처치 내역이 없습니다.";
+        return;
+    }
+
+    area.innerHTML = "";
+    treatmentList.forEach((t, idx) => {
+        area.innerHTML += `
+            <div style="padding:10px; background:white; border-radius:8px; margin-bottom:10px;">
+                <strong>${t.type}</strong> - ${t.name}<br>
+                <span style="color:#6b7280;">${t.memo || "-"}</span>
+                <button onclick="deleteTreatment(${idx})"
+                    style="float:right; margin-top:-25px; padding:4px 10px;
+                           background:#ef4444; color:white; border:none;
+                           border-radius:6px; cursor:pointer;">
+                    삭제
+                </button>
+            </div>
+        `;
+    });
+}
+
+function deleteTreatment(idx) {
+    treatmentList.splice(idx, 1);
+    renderTreatmentList();
+}
+
+/* ---------------------------
+   🔥 전체 저장
+--------------------------- */
+async function saveAll() {
+    const visitId = sessionStorage.getItem("currentVisitId");
+    const doctorId = 1; // 로그인한 의사 ID로 교체하면 됨
+
+    if (!visitId) {
+        alert("현재 선택된 환자가 없습니다.");
+        return;
+    }
+
+    const body = {
+        note: "",
+        drugs: drugList,
+        treatments: treatmentList
+    };
+
+    const res = await fetch(`/api/prescription/create?visitId=${visitId}&doctorId=${doctorId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+
+    if (!res.ok) {
+        alert("저장 실패!");
+        return;
+    }
+
+    alert("처방이 정상적으로 저장되었습니다.");
+}
+
+/* 처음 들어왔을 때 환자 정보 로딩 */
+loadPatientInfo();
+</script>

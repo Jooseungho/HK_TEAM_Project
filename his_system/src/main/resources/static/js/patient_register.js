@@ -1,4 +1,4 @@
-document.getElementById("patientForm").addEventListener("submit", async function(e) {
+/*document.getElementById("patientForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
     const data = {
@@ -28,4 +28,4 @@ document.getElementById("patientForm").addEventListener("submit", async function
         alert("등록 중 오류 발생");
         console.error(error);
     }
-});
+});*/

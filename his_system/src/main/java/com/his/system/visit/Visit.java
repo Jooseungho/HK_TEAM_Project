@@ -33,15 +33,16 @@ public class Visit {
     @Column(name = "STATUS")
     private VisitStatus status;
 
-    @Column(name = "ARRIVAL_TIME")
+    @Column(name = "REGISTERED_AT")
     private LocalDateTime arrivalTime;
 
-    @Column(name = "CALL_TIME")
+    @Column(name = "CALLED_AT")
     private LocalDateTime callTime;
 
-    @Column(name = "START_TIME")
+    @Column(name = "STARTED_AT")
     private LocalDateTime startTime;
 
-    @Column(name = "END_TIME")
+    @Column(name = "FINISHED_AT")
     private LocalDateTime endTime;
+
 }
