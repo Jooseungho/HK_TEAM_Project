@@ -31,6 +31,9 @@ public class Staff {
     @Column(name = "PHONE", nullable = false, length = 20)
     private String phone;
 
+    @Column(name = "EMAIL", length = 100)
+    private String email;   // ⭐ 추가됨
+
     @Column(name = "PASSWORD", nullable = false, length = 255)
     private String password;
 

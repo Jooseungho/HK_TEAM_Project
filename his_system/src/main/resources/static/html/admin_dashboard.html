@@ -1,10 +1,298 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+    <meta charset="UTF-8">
+    <title>관리자 시스템</title>
+    <style>
+        body {
+            font-family: Pretendard, sans-serif;
+            background: #f8f9fb;
+            padding: 0;
+            margin: 0;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .header .title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .summary-boxes {
+            display: flex;
+            gap: 20px;
+            padding: 20px 30px;
+        }
+
+        .box {
+            flex: 1;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .box-title {
+            font-size: 15px;
+            color: #555;
+        }
+        .box-value {
+            margin-top: 8px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        /* 메뉴 */
+        .menu {
+            display: flex;
+            gap: 20px;
+            padding: 0 30px;
+            margin-top: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .menu a {
+            padding: 15px 5px;
+            font-size: 16px;
+            color: #555;
+            text-decoration: none;
+        }
+        .menu a.active {
+            font-weight: 700;
+            border-bottom: 3px solid #6b50ff;
+            color: #6b50ff;
+        }
+
+        /* 계정 테이블 */
+        .content {
+            padding: 25px 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        th {
+            background: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-size: 14px;
+        }
+        td {
+            padding: 12px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        .tag.doctor { background: #4f46e5; }
+        .tag.nurse { background: #16a34a; }
+        .tag.admin { background: #9333ea; }
+
+        .btn {
+            padding: 7px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-edit {
+            background: #6b50ff;
+            color: white;
+        }
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* 오른쪽 계정 생성 */
+        .create-panel {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            width: 350px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .btn-create {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background: #6b50ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .layout {
+            display: flex;
+            gap: 30px;
+        }
+    </style>
 </head>
+
 <body>
+
+<div class="header">
+    <div class="title">관리자 시스템</div>
+    <div>박관리자님 환영합니다</div>
+</div>
+
+<div class="summary-boxes">
+    <div class="box">
+        <div class="box-title">전체 계정</div>
+        <div class="box-value" id="totalCount">0명</div>
+    </div>
+    <div class="box">
+        <div class="box-title">활성 계정</div>
+        <div class="box-value" id="activeCount">0명</div>
+    </div>
+    <div class="box">
+        <div class="box-title">재고 부족</div>
+        <div class="box-value">2개</div>
+    </div>
+</div>
+
+<div class="menu">
+    <a class="active">계정 관리</a>
+    <a>시스템 로그</a>
+    <a>재고 관리</a>
+</div>
+
+<div class="content layout">
+
+    <!-- 왼쪽 계정 테이블 -->
+    <div style="flex: 1">
+        <table>
+            <thead>
+            <tr>
+                <th>직원번호</th>
+                <th>이름</th>
+                <th>역할</th>
+                <th>연락처</th>
+                <th>이메일</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+            <tbody id="userTable"></tbody>
+        </table>
+    </div>
+
+    <!-- 오른쪽 계정 생성 패널 -->
+    <div class="create-panel">
+        <div class="panel-title">신규 계정 생성</div>
+
+        <input id="empId" placeholder="직원번호 (예: D001)">
+        <input id="name" placeholder="이름">
+        <select id="role">
+            <option value="DOCTOR">의사</option>
+            <option value="NURSE">간호사</option>
+            <option value="ADMIN">관리자</option>
+        </select>
+        <input id="email" placeholder="이메일">
+        <input id="phone" placeholder="연락처 (010-0000-0000)">
+        <button class="btn-create" onclick="createUser()">생성</button>
+    </div>
+
+</div>
+
+<script>
+async function loadUsers() {
+    const res = await fetch("/api/admin/users");
+    const list = await res.json();
+
+    const table = document.getElementById("userTable");
+    table.innerHTML = "";
+
+    list.forEach(u => {
+        table.innerHTML += `
+            <tr>
+                <td>${u.empId}</td>
+                <td>${u.name}</td>
+                <td><span class="tag ${u.role.toLowerCase()}">${u.role}</span></td>
+                <td>${u.phone}</td>
+                <td>${u.email}</td>
+                <td>
+                    <button class="btn btn-edit" onclick="editUser('${u.id}')">수정</button>
+                    <button class="btn btn-delete" onclick="deleteUser('${u.id}')">삭제</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("totalCount").innerText = list.length + "명";
+    document.getElementById("activeCount").innerText =
+        list.filter(u => u.active).length + "명";
+}
+
+async function createUser() {
+    const body = {
+        empId: empId.value,
+        name: name.value,
+        role: role.value,
+        email: email.value,
+        phone: phone.value
+    };
+
+    await fetch("/api/admin/createUser", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body)
+    });
+
+    alert("계정 생성 완료!");
+    loadUsers();
+}
+
+async function deleteUser(id) {
+    if (!confirm("정말 삭제할까요?")) return;
+
+    await fetch(`/api/admin/delete/${id}`, { method: "DELETE" });
+
+    loadUsers();
+}
+
+function editUser(id) {
+    alert("✏️ 수정 기능은 지금 뒤에서 만들어주는 중!");
+}
+
+loadUsers();
+</script>
 
 </body>
 </html>
