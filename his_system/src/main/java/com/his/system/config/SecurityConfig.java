@@ -17,10 +17,10 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers("/api/patient/**").permitAll()   // ⭐ 추가!!
-                .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
-                .requestMatchers("/api/nurse/**").hasRole("NURSE")
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/patient/**").permitAll()
+                .requestMatchers("/api/doctor/**").permitAll()
+                .requestMatchers("/api/nurse/**").permitAll()   // ⭐⭐ 여기!
+                .requestMatchers("/api/admin/**").permitAll()
                 .anyRequest().permitAll()
         );
 

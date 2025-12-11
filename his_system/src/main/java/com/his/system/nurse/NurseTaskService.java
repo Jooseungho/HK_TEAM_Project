@@ -13,7 +13,7 @@ public class NurseTaskService {
 
     private final NurseTaskRepository nurseTaskRepository;
 
-    // 처방 항목을 간호사 작업으로 등록
+    // 처방 항목을 간호사 작업으로 생성
     public void createTask(Prescription prescription, PrescriptionItem item) {
 
         NurseTask task = NurseTask.builder()
@@ -40,5 +40,4 @@ public class NurseTaskService {
 
         return nurseTaskRepository.save(task);
     }
-
 }

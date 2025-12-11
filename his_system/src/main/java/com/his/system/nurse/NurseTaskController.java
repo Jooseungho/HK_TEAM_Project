@@ -1,5 +1,6 @@
 package com.his.system.nurse;
 
+import com.his.system.nurse.NurseTaskDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,24 +11,47 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NurseTaskController {
 
-    private final NurseTaskService nurseTaskService;
     private final NurseTaskRepository repository;
+    private final NurseTaskService nurseTaskService;
 
-    // 대기 중 처치 조회
+    // ⏳ 대기 중 Task 조회 (DTO 반환)
     @GetMapping("/pending")
-    public List<NurseTask> getPendingTasks() {
-        return repository.findByStatus(NurseTaskStatus.PENDING);
+    public List<NurseTaskDTO> getPendingTasks() {
+        return repository.findByStatus(NurseTaskStatus.PENDING)
+                .stream()
+                .map(this::toDTO)
+                .toList();
     }
 
-    // 완료된 처치 조회
+    // ✅ 완료된 Task 조회 (DTO 반환)
     @GetMapping("/done")
-    public List<NurseTask> getDoneTasks() {
-        return repository.findByStatus(NurseTaskStatus.DONE);
+    public List<NurseTaskDTO> getDoneTasks() {
+        return repository.findByStatus(NurseTaskStatus.DONE)
+                .stream()
+                .map(this::toDTO)
+                .toList();
     }
 
-    // 완료 처리
+    // ✔ 처치 완료 처리
     @PostMapping("/{id}/complete")
-    public NurseTask complete(@PathVariable Long id) {
-        return nurseTaskService.completeTask(id);
+    public NurseTaskDTO complete(@PathVariable Long id) {
+        NurseTask updated = nurseTaskService.completeTask(id);
+        return toDTO(updated);
+    }
+
+    // -------------------------------
+    // ✔ 엔티티 → DTO 변환 메서드
+    // -------------------------------
+    private NurseTaskDTO toDTO(NurseTask task) {
+        return NurseTaskDTO.builder()
+                .id(task.getId())
+                .patientId(task.getPatientId())
+                .visitId(task.getVisitId())
+                .itemType(task.getItemType().name())
+                .itemName(task.getItemName())
+                .status(task.getStatus().name())
+                .createdAt(task.getCreatedAt())
+                .doneAt(task.getDoneAt())
+                .build();
     }
 }

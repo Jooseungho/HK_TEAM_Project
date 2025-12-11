@@ -8,5 +8,4 @@ public interface NurseTaskRepository extends JpaRepository<NurseTask, Long> {
     List<NurseTask> findByStatus(NurseTaskStatus status);
 
     List<NurseTask> findByVisitId(Long visitId);
-
 }
