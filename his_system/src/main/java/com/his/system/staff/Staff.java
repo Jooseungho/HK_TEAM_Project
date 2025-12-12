@@ -5,7 +5,6 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "STAFF")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,38 +13,23 @@ import java.time.LocalDateTime;
 public class Staff {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "STAFF_ID")
-    private Long id;
+    @Column(length = 20)
+    private String employeeNo;  // 직원번호를 PK로 사용
 
-    @Column(name = "EMPLOYEE_NO", nullable = false, length = 30)
-    private String employeeNo;
-
-    @Column(name = "NAME", nullable = false, length = 50)
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "ROLE", nullable = false)
     private StaffRole role;
 
-    @Column(name = "PHONE", nullable = false, length = 20)
     private String phone;
 
-    @Column(name = "EMAIL", length = 100)
-    private String email;   // ⭐ 추가됨
+    private String email;
 
-    @Column(name = "PASSWORD", nullable = false, length = 255)
     private String password;
 
-    @Column(name = "DEPARTMENT", length = 100)
-    private String department;
+    private int active;  // 1 = 활성화, 0 = 비활성화
 
-    @Column(name = "ACTIVE")
-    private Integer active;
-
-    @Column(name = "CREATED_AT")
     private LocalDateTime createdAt;
 
-    @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 }

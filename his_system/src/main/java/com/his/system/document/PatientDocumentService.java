@@ -19,13 +19,13 @@ public class PatientDocumentService {
     private final StaffRepository staffRepository;
 
     // 문서 생성
-    public PatientDocument createDocument(Long visitId, Long staffId,
+    public PatientDocument createDocument(Long visitId, String employeeNo,
                                           DocumentType docType, String htmlContent) {
 
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new RuntimeException("내원 정보 없음"));
 
-        Staff staff = staffRepository.findById(staffId)
+        Staff staff = staffRepository.findById(employeeNo)
                 .orElseThrow(() -> new RuntimeException("직원 정보 없음"));
 
         PatientDocument doc = PatientDocument.builder()

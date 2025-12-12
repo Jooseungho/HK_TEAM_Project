@@ -8,23 +8,19 @@ import lombok.Getter;
 @Builder
 public class UserDTO {
 
-    private Long id;
-    private String empId;
+    private String employeeNo;
     private String name;
-    private String role;
-    private String email;
     private String phone;
-    private Integer active;
+    private String email;
+    private String role;
 
-    public static UserDTO from(Staff s) {
+    public static UserDTO fromEntity(Staff staff) {
         return UserDTO.builder()
-                .id(s.getId())
-                .empId(s.getEmployeeNo())
-                .name(s.getName())
-                .role(s.getRole().name())
-                .email(s.getEmail())
-                .phone(s.getPhone())
-                .active(s.getActive())
+                .employeeNo(staff.getEmployeeNo())
+                .name(staff.getName())
+                .phone(staff.getPhone())
+                .email(staff.getEmail())
+                .role(staff.getRole().name())
                 .build();
     }
 }

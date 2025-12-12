@@ -16,7 +16,7 @@ public class PrescriptionController {
     @PostMapping("/create")
     public ResponseEntity<?> createPrescription(
             @RequestParam Long visitId,
-            @RequestParam Long doctorId,
+            @RequestParam String doctorId,
             @RequestBody PrescriptionRequest req
     ) {
         prescriptionService.createPrescription(visitId, doctorId, req);

@@ -19,17 +19,17 @@ public class VitalService {
     private final StaffRepository staffRepository;
 
     // 🟦 바이탈 입력
-    public Vital createVital(Long visitId, Long nurseId, Vital vitalData) {
+    public Vital createVital(Long visitId, String employeeNo, Vital vitalData) {
 
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new RuntimeException("내원 정보 없음"));
 
-        Staff nurse = staffRepository.findById(nurseId)
+        Staff nurseId = staffRepository.findById(employeeNo)
                 .orElseThrow(() -> new RuntimeException("간호사 정보 없음"));
 
         Vital vital = Vital.builder()
                 .visit(visit)
-                .nurseId(nurseId)
+                .nurseId(employeeNo)
                 .bpSystolic(vitalData.getBpSystolic())
                 .bpDiastolic(vitalData.getBpDiastolic())
                 .heartRate(vitalData.getHeartRate())

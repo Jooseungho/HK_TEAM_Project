@@ -16,12 +16,12 @@ public class SystemLogService {
     private final StaffRepository staffRepository;
 
     // 로그 저장
-    public SystemLog createLog(Long staffId, String actionType, Long targetId, String description) {
+    public SystemLog createLog(String employeeNo, String actionType, Long targetId, String description) {
 
         Staff staff = null;
 
-        if (staffId != null) {
-            staff = staffRepository.findById(staffId)
+        if (employeeNo != null) {
+            staff = staffRepository.findById(employeeNo)
                     .orElseThrow(() -> new RuntimeException("직원 정보를 찾을 수 없습니다."));
         }
 
@@ -41,12 +41,12 @@ public class SystemLogService {
         return logRepository.findAll();
     }
 
-    // 직원별 로그 조회
-    public List<SystemLog> getLogsByStaff(Long staffId) {
+    public List<SystemLog> getLogsByStaff(String employeeNo) {
         return logRepository.findAll().stream()
-                .filter(log -> log.getStaff() != null && log.getStaff().getId().equals(staffId))
+                .filter(log -> log.getStaff() != null && log.getStaff().getEmployeeNo().equals(employeeNo))
                 .toList();
     }
+
 
     // 특정 대상(환자, 내원, 처방 등) 로그 조회
     public List<SystemLog> getLogsByTarget(Long targetId) {

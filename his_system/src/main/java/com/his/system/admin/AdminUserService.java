@@ -1,5 +1,6 @@
 package com.his.system.admin;
 
+import com.his.system.admin.CreateUserRequest;
 import com.his.system.staff.Staff;
 import com.his.system.staff.StaffRepository;
 import com.his.system.staff.StaffRole;
@@ -9,37 +10,38 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AdminUserService {
 
     private final StaffRepository staffRepository;
-    private final BCryptPasswordEncoder encoder;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    // 전체 직원 조회
-    public List<UserDTO> getAllUsers() {
-        return staffRepository.findAll()
-                .stream()
-                .map(UserDTO::from)
-                .toList();
-    }
-
-    public void createUser(CreateUserRequest req) {
+    public void createUser(CreateUserRequest request) {
+        String initPassword = passwordEncoder.encode(request.getPhone());  // 초기 비밀번호 = 전화번호
 
         Staff staff = Staff.builder()
-                .employeeNo(req.getEmpId())
-                .name(req.getName())
-                .role(StaffRole.valueOf(req.getRole()))
-                .phone(req.getPhone())
-                .email(req.getEmail())        // ← 이메일 추가
-                .password(encoder.encode(req.getPhone()))  // ⭐ 초기 비밀번호 = 연락처
-                .active(1)
+                .employeeNo(request.getEmployeeNo())
+                .name(request.getName())
+                .role(request.getRole())   // 이미 enum
+                .phone(request.getPhone())
+                .email(request.getEmail())
+                .password(initPassword)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        staffRepository.save(staff);
-    }
+        
 
+        staffRepository.save(staff);
+        
+        
+    }
+    public List<UserDTO> getAllUsers() {
+    	return staffRepository.findAll().stream()
+    			.map(UserDTO::fromEntity)
+    			.collect(Collectors.toList());
+    }
 }

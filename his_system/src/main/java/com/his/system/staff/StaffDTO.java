@@ -6,24 +6,20 @@ import lombok.Getter;
 @Getter
 @Builder
 public class StaffDTO {
-
-    private Long id;
     private String employeeNo;
     private String name;
-    private String role;
-    private String email;
+    private StaffRole role;
     private String phone;
-    private Integer active;
+    private String email;
+    private Boolean active;
 
-    public static StaffDTO from(Staff s) {
+    public static StaffDTO fromEntity(Staff staff) {
         return StaffDTO.builder()
-                .id(s.getId())
-                .employeeNo(s.getEmployeeNo())
-                .name(s.getName())
-                .role(s.getRole().name())
-                .email(s.getEmail())
-                .phone(s.getPhone())
-                .active(s.getActive())
+                .employeeNo(staff.getEmployeeNo())
+                .name(staff.getName())
+                .role(staff.getRole())
+                .phone(staff.getPhone())
+                .email(staff.getEmail())
                 .build();
     }
 }

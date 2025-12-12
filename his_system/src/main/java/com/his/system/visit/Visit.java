@@ -27,7 +27,7 @@ public class Visit {
 
     // 의사 ID (Staff FK)
     @Column(name = "DOCTOR_ID")
-    private Long doctorId;
+    private String doctorId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS")

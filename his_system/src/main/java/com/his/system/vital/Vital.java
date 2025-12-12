@@ -28,7 +28,7 @@ public class Vital {
 
     // NURSE ID → 단순 Long 값
     @Column(name = "NURSE_ID", nullable = false)
-    private Long nurseId;
+    private String nurseId;
 
     @Column(name = "BP_SYSTOLIC")
     private Integer bpSystolic;

@@ -16,11 +16,11 @@ public class JwtProvider {
         this.key = Keys.hmacShaKeyFor("my-super-secret-key-for-his-system".getBytes());
     }
 
-    public String createToken(Long staffId, String role) {
+    public String createToken(String employeeNo, String role) {
         long expiration = 1000L * 60 * 60 * 24; // 24시간
 
         return Jwts.builder()
-                .setSubject(staffId.toString())
+                .setSubject(employeeNo.toString())
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
