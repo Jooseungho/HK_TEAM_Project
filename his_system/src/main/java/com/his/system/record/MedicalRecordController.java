@@ -24,20 +24,20 @@ public class MedicalRecordController {
         return medicalRecordService.getRecordsByVisit(visitId);
     }
 
-    // 의사별 기록 조회
-    @GetMapping("/doctor/{doctorId}")
-    public List<MedicalRecord> getRecordsByDoctor(@PathVariable Long doctorId) {
-        return medicalRecordService.getRecordsByDoctor(doctorId);
+    @GetMapping("/doctor/{employeeNo}")
+    public List<MedicalRecord> getRecordsByDoctor(@PathVariable String employeeNo) {
+        return medicalRecordService.getRecordsByDoctor(employeeNo);
     }
+
 
     // SOAP 기록 생성
     @PostMapping("/create")
     public MedicalRecord createRecord(
             @RequestParam Long visitId,
-            @RequestParam Long doctorId,
+            @RequestParam String employeeNo,
             @RequestBody MedicalRecord data
     ) {
-        return medicalRecordService.createRecord(visitId, doctorId, data);
+        return medicalRecordService.createRecord(visitId, employeeNo, data);
     }
 
     // 기록 상세 조회

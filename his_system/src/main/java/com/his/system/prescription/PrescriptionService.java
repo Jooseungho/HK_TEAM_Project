@@ -21,12 +21,12 @@ public class PrescriptionService {
     private final StaffRepository staffRepository;
     private final NurseTaskService nurseTaskService;
 
-    public Prescription createPrescription(Long visitId, Long doctorId, PrescriptionRequest req) {
+    public Prescription createPrescription(Long visitId, String employeeNo, PrescriptionRequest req) {
 
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new RuntimeException("내원 정보 없음"));
 
-        Staff doctor = staffRepository.findById(doctorId)
+        Staff doctor = staffRepository.findById(employeeNo)
                 .orElseThrow(() -> new RuntimeException("의사 정보 없음"));
 
         // 1. Prescription 생성

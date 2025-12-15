@@ -55,7 +55,7 @@ public class VisitController {
     @PostMapping("/call/{visitId}/{doctorId}")
     public Visit callPatient(
             @PathVariable Long visitId,
-            @PathVariable Long doctorId
+            @PathVariable String doctorId
     ) {
         return visitService.callPatient(visitId, doctorId);
     }

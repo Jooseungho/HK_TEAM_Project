@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <title>의사 진료 시스템</title>
 
+    <!-- 🔥 추가: 접근 권한 / 이름 표시 / 로그아웃 기능 -->
+    <script src="/js/access.js"></script>
+	<script src="/js/app.js"></script>
+    
+
     <style>
         body { font-family: 'Pretendard', sans-serif; margin: 0; background: #f9fafb; }
         header {
@@ -19,7 +24,6 @@
         .card-title { color:#555; margin-bottom:7px; }
         .card-value { font-size:22px; font-weight:700; }
 
-        /* Tabs */
         .tabs { display:flex; padding:10px 30px 0; gap:35px; background:white; border-bottom:1px solid #d1d5db; font-size:17px; }
         .tab { padding:10px 4px 14px; cursor:pointer; color:#4b5563; }
         .tab.active { font-weight:700; color:#2563eb; border-bottom:3px solid #2563eb; }
@@ -35,8 +39,22 @@
         <img src="/static/icon_doctor.svg" width="30">
         의사 진료 시스템
     </div>
+
+    <!-- 🔥 기존 doctor-name DIV → 변경하지 않고 내부 값만 JS로 교체 -->
     <div id="doctor-name">김의사 님 환영합니다</div>
+
+    <!-- 🔥 추가: 로그아웃 버튼 -->
+    <button onclick="logout()" 
+            style="margin-left:20px; padding:8px 15px; cursor:pointer;">
+        로그아웃
+    </button>
 </header>
+
+<!-- 🔥 추가: 페이지 로딩 직후 접근 권한 체크 -->
+<script>
+    checkAccess(["DOCTOR"]);
+    // 이유: DOCTOR 역할만 접근 가능하도록 보호
+</script>
 
 <!-- 상단 카드 -->
 <div class="cards">
@@ -64,6 +82,7 @@
 
 <!-- 콘텐츠 영역 -->
 <div id="content-area"></div>
+
 <script>
 /* -------------------------------
     상단 카드 카운트 로드
@@ -83,9 +102,6 @@ async function loadDashboardCounts() {
     document.getElementById("done-count").innerText = `${done}명`;
 }
 
-/* -------------------------------
-   HTML 로드 + 내부 script 실행
-------------------------------- */
 /* ------------------------------------
 HTML 로드 + 내부 script 실행 (중복 제거)
 ------------------------------------- */
@@ -97,17 +113,14 @@ function loadTabContent(file, extraParam = "") {
          const area = document.getElementById("content-area");
          area.innerHTML = html;
 
-         /* 🔥 기존에 body에 붙어있던 이전 스크립트 제거 */
          document.querySelectorAll("script[data-dynamic='yes']")
              .forEach(s => s.remove());
 
-         /* 페이지 내부 script 다시 실행 */
          const scripts = area.querySelectorAll("script");
 
          scripts.forEach(oldScript => {
              let code = oldScript.innerHTML;
 
-             // visitId 전달
              if (
                  (file === "doctor_record" || file === "doctor_prescription") &&
                  extraParam.startsWith("?visitId=")
@@ -116,16 +129,14 @@ function loadTabContent(file, extraParam = "") {
                  code = `window.visitId=${visitId};\n` + code;
              }
 
-             // 새 script 생성
              const newScript = document.createElement("script");
-             newScript.setAttribute("data-dynamic", "yes"); // 나중에 제거 가능하게 표시
+             newScript.setAttribute("data-dynamic", "yes");
              newScript.text = code;
 
              document.body.appendChild(newScript);
          });
      });
 }
-
 
 /* -------------------------------
     탭 클릭 → 화면 교체
@@ -138,7 +149,6 @@ document.querySelectorAll(".tab").forEach(tab => {
         const tabName = tab.dataset.tab;
         const currentVisitId = sessionStorage.getItem("currentVisitId");
 
-        // 진료 기록 / 처방 관리 탭은 visitId 필요
         if (tabName === "doctor_record" || tabName === "doctor_prescription") {
             if (!currentVisitId) {
                 alert("현재 선택된 환자가 없습니다.");
@@ -157,6 +167,11 @@ document.querySelectorAll(".tab").forEach(tab => {
 window.addEventListener("load", () => {
     loadDashboardCounts();
 
+    const name = localStorage.getItem("name");
+    if (name) {
+        document.getElementById("doctor-name").innerText = `${name} 님 환영합니다`;  // 🔥 추가
+    }
+
     const visitId = sessionStorage.getItem("currentVisitId");
 
     if (location.hash === "#record" && visitId) {
@@ -168,9 +183,6 @@ window.addEventListener("load", () => {
     }
 });
 </script>
-
-	
-
 
 </body>
 </html>

@@ -8,5 +8,6 @@ import lombok.Getter;
 public class AuthResponseDto {
     private String token;
     private String role;
-    private Long staffId;
+    private String employeeNo;
+    private String name;
 }

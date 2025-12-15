@@ -19,12 +19,12 @@ public class MedicalRecordService {
     private final StaffRepository staffRepository;
 
     // SOAP 저장
-    public MedicalRecord createRecord(Long visitId, Long doctorId, MedicalRecord data) {
+    public MedicalRecord createRecord(Long visitId, String employeeNo, MedicalRecord data) {
 
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new RuntimeException("visit 없음"));
 
-        Staff doctor = staffRepository.findById(doctorId)
+        Staff doctor = staffRepository.findById(employeeNo)
                 .orElseThrow(() -> new RuntimeException("doctor 없음"));
 
         MedicalRecord record = MedicalRecord.builder()
@@ -48,10 +48,11 @@ public class MedicalRecordService {
         return medicalRecordRepository.findByVisitId(visitId);
     }
 
-    // 의사별 조회
-    public List<MedicalRecord> getRecordsByDoctor(Long doctorId) {
-        return medicalRecordRepository.findByDoctorId(doctorId);
+ // 의사(employeeNo)별 기록 조회
+    public List<MedicalRecord> getRecordsByDoctor(String employeeNo) {
+        return medicalRecordRepository.findByDoctorEmployeeNo(employeeNo);
     }
+
 
     // 환자별 조회
     public List<MedicalRecord> getRecordsByPatient(Long patientId) {

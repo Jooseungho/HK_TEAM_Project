@@ -15,7 +15,7 @@ public class VitalController {
     // 바이탈 입력
     @PostMapping("/create")
     public Vital createVital(@RequestParam Long visitId,
-                             @RequestParam Long nurseId,
+                             @RequestParam String nurseId,
                              @RequestBody Vital vitalData) {
 
         return vitalService.createVital(visitId, nurseId, vitalData);

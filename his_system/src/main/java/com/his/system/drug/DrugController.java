@@ -34,21 +34,21 @@ public class DrugController {
     // 재고 증가 (입고)
     @PostMapping("/increase")
     public Drug increaseStock(@RequestParam Long drugId,
-                              @RequestParam Long staffId,
+                              @RequestParam String employeeNo,
                               @RequestParam int quantity,
                               @RequestParam(required = false) String memo) {
 
-        return drugService.increaseStock(drugId, staffId, quantity, memo);
+        return drugService.increaseStock(drugId, employeeNo, quantity, memo);
     }
 
     // 재고 감소 (출고)
     @PostMapping("/decrease")
     public Drug decreaseStock(@RequestParam Long drugId,
-                              @RequestParam Long staffId,
+                              @RequestParam String employeeNo,
                               @RequestParam int quantity,
                               @RequestParam(required = false) String memo) {
 
-        return drugService.decreaseStock(drugId, staffId, quantity, memo);
+        return drugService.decreaseStock(drugId, employeeNo, quantity, memo);
     }
 
     // 특정 약품의 입출고 로그 조회

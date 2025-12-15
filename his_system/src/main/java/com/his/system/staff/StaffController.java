@@ -1,8 +1,8 @@
 package com.his.system.staff;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -12,21 +12,13 @@ public class StaffController {
 
     private final StaffService staffService;
 
-    // 직원 생성 (관리자 기능)
-    @PostMapping("/create")
-    public Staff createStaff(@RequestBody Staff staff) {
-        return staffService.createStaff(staff);
+    @GetMapping
+    public ResponseEntity<List<StaffDTO>> getAllStaff() {
+        return ResponseEntity.ok(staffService.getAllStaff());
     }
 
-    // 직원 전체 조회
-    @GetMapping("/list")
-    public List<Staff> getAllStaff() {
-        return staffService.getAllStaff();
-    }
-
-    // 직원 상세 조회
-    @GetMapping("/{id}")
-    public Staff getStaff(@PathVariable Long id) {
-        return staffService.getStaff(id);
+    @GetMapping("/{employeeNo}")
+    public ResponseEntity<StaffDTO> getStaffByEmployeeNo(@PathVariable String employeeNo) {
+        return ResponseEntity.ok(staffService.getStaffByEmployeeNo(employeeNo));
     }
 }

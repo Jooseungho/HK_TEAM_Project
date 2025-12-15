@@ -64,7 +64,7 @@ public class VisitService {
     }
 
     // 환자 호출
-    public Visit callPatient(Long visitId, Long doctorId) {
+    public Visit callPatient(Long visitId, String doctorId) {
         Visit v = getVisit(visitId);
         v.setDoctorId(doctorId);
         v.setStatus(VisitStatus.CALLED);

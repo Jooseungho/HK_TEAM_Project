@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class VisitRequest {
     private Long patientId;
-    private Long nurseId;
+    private String nurseId;
     private Integer bpSystolic;
     private Integer bpDiastolic;
     private Integer heartRate;
