@@ -175,7 +175,7 @@
 
 <div class="header">
     <div class="title">관리자 시스템</div>
-    <div>박관리자님 환영합니다</div>
+    <div id="admin-name"></div>
 </div>
 
 <div class="summary-boxes">
@@ -247,22 +247,23 @@ async function loadUsers() {
     list.forEach(u => {
         table.innerHTML += `
             <tr>
-                <td>${u.empId}</td>
-                <td>${u.name}</td>
-                <td><span class="tag ${u.role.toLowerCase()}">${u.role}</span></td>
-                <td>${u.phone}</td>
-                <td>${u.email}</td>
-                <td>
-                    <button class="btn btn-edit" onclick="editUser('${u.id}')">수정</button>
-                    <button class="btn btn-delete" onclick="deleteUser('${u.id}')">삭제</button>
-                </td>
+        		<td>${u.employeeNo}</td>
+        		<td>${u.name}</td>
+        		<td><span class="tag ${u.role.toLowerCase()}">${u.role}</span></td>
+        		<td>${u.phone ?? ""}</td>
+        		<td>${u.email ?? ""}</td>
+        		<td>
+        			<button class="btn btn-edit" onclick="editUser('${u.employeeNo}')">수정</button>
+        	    	<button class="btn btn-delete" onclick="deleteUser('${u.employeeNo}')">삭제</button>
+        		</td>
+
             </tr>
         `;
     });
 
     document.getElementById("totalCount").innerText = list.length + "명";
     document.getElementById("activeCount").innerText =
-        list.filter(u => u.active).length + "명";
+        list.length + "명";
 }
 
 async function createUser() {
@@ -293,27 +294,28 @@ async function createUser() {
     loadUsers();
 }
 
-async function deleteUser(id) {
-    if (!confirm("정말 삭제할까요?")) return;
-
-    await fetch(`/api/admin/delete/${id}`, { method: "DELETE" });
-
+async function deleteUser(employeeNo) {
+	 if (!confirm("정말 삭제할까요?")) return;
+    await fetch(`/api/admin/delete/${employeeNo}`, {
+        method: "DELETE"
+    });
     loadUsers();
 }
 
-function editUser(id) {
-    alert("✏️ 수정 기능은 지금 뒤에서 만들어주는 중!");
-}
 
-loadUsers();
+/* ✅ DOM 로딩 이후 실행 */
+window.addEventListener("DOMContentLoaded", () => {
+    loadUsers();
 
-/* 🔥 추가: 로그인 사용자 이름 자동 반영 */
-window.addEventListener("load", () => {
     const name = localStorage.getItem("name");
     if (name) {
         document.getElementById("admin-name").innerText = `${name} 님 환영합니다`;
     }
 });
+
+function editUser(employeeNo) {
+    alert(`✏️ ${employeeNo} 수정 기능은 추후 구현`);
+}
 
 </script>
 

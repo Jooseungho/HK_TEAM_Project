@@ -41,7 +41,7 @@
     </div>
 
     <!-- 🔥 기존 doctor-name DIV → 변경하지 않고 내부 값만 JS로 교체 -->
-    <div id="doctor-name">김의사 님 환영합니다</div>
+    <div id="doctor-name"></div>
 
     <!-- 🔥 추가: 로그아웃 버튼 -->
     <button onclick="logout()" 
@@ -88,18 +88,18 @@
     상단 카드 카운트 로드
 ------------------------------- */
 async function loadDashboardCounts() {
-    const res = await fetch("/api/visit/list");
+	const res = await fetch("/api/visit/waiting_list");
     if (!res.ok) return;
 
     const list = await res.json();
 
-    const waiting = list.filter(v => v.status === "WAITING").length;
-    const inTreatment = list.filter(v => v.status === "IN_TREATMENT").length;
-    const done = list.filter(v => v.status === "DONE").length;
+    const waiting = list.length;
+    const inTreatment = 0;
+    const done = 0;
 
-    document.getElementById("waiting-count").innerText = `${waiting}명`;
-    document.getElementById("on-treatment-count").innerText = `${inTreatment}명`;
-    document.getElementById("done-count").innerText = `${done}명`;
+    document.getElementById("waiting-count").innerText = `${list.length}명`;
+    document.getElementById("on-treatment-count").innerText = `0명`;
+    document.getElementById("done-count").innerText = `0명`;
 }
 
 /* ------------------------------------
