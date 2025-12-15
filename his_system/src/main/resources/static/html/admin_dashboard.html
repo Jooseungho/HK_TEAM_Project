@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>관리자 시스템</title>
-
+    
     <!-- 🔥 추가: 접근 권한 / 이름 표시 / 로그아웃 기능 -->
     <script src="/js/access.js"></script>
 	<script src="/js/app.js"></script>
-
-
+    
     <style>
         body {
             font-family: Pretendard, sans-serif;
@@ -55,6 +54,7 @@
             font-weight: 700;
         }
 
+        /* 메뉴 */
         .menu {
             display: flex;
             gap: 20px;
@@ -74,6 +74,7 @@
             color: #6b50ff;
         }
 
+        /* 계정 테이블 */
         .content {
             padding: 25px 30px;
         }
@@ -127,6 +128,7 @@
             color: white;
         }
 
+        /* 오른쪽 계정 생성 */
         .create-panel {
             margin-top: 20px;
             background: white;
@@ -173,20 +175,8 @@
 
 <div class="header">
     <div class="title">관리자 시스템</div>
-
-    <!-- 🔥 기존 환영 문구 → 내부 내용만 JS에서 덮어쓰기 -->
-    <div id="admin-name">관리자님 환영합니다</div>
-
-    <!-- 🔥 로그아웃 버튼 추가 -->
-    <button onclick="logout()" style="padding:8px 15px; cursor:pointer;">
-        로그아웃
-    </button>
+    <div>박관리자님 환영합니다</div>
 </div>
-
-<!-- 🔥 추가: 페이지 진입 시 Admin 권한 검사 -->
-<script>
-    checkAccess(["ADMIN"]);
-</script>
 
 <div class="summary-boxes">
     <div class="box">
@@ -276,13 +266,22 @@ async function loadUsers() {
 }
 
 async function createUser() {
-    const body = {
-        empId: empId.value,
-        name: name.value,
-        role: role.value,
-        email: email.value,
-        phone: phone.value
-    };
+//     const body = {
+//         empId: empId.value,
+//         name: name.value,
+//         role: role.value,
+//         email: email.value,
+//         phone: phone.value
+//     };
+// 수정: 화면으로부터 입력값 못가져오는 오류 수정
+		const body = {
+		    empId: document.querySelector("#empId").value,
+		    name: document.querySelector("#name").value,
+		    role: document.querySelector("#role").value,
+		    email: document.querySelector("#email").value,
+		    phone: document.querySelector("#phone").value
+		};
+
 
     await fetch("/api/admin/createUser", {
         method: "POST",
@@ -315,6 +314,7 @@ window.addEventListener("load", () => {
         document.getElementById("admin-name").innerText = `${name} 님 환영합니다`;
     }
 });
+
 </script>
 
 </body>
