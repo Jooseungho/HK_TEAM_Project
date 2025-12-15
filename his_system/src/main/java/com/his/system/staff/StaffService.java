@@ -18,7 +18,7 @@ public class StaffService {
     }
 
     public StaffDTO getStaffByEmployeeNo(String employeeNo) {
-        Staff staff = staffRepository.findById(employeeNo)
+        Staff staff = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("해당 직원번호의 직원을 찾을 수 없습니다."));
         return StaffDTO.fromEntity(staff);
     }

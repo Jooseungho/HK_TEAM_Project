@@ -10,17 +10,19 @@ public class UserDTO {
 
     private String employeeNo;
     private String name;
+    private String role;
     private String phone;
     private String email;
-    private String role;
+    private int active;
 
     public static UserDTO fromEntity(Staff staff) {
         return UserDTO.builder()
                 .employeeNo(staff.getEmployeeNo())
                 .name(staff.getName())
+                .role(staff.getRole().name())
                 .phone(staff.getPhone())
                 .email(staff.getEmail())
-                .role(staff.getRole().name())
+                .active(staff.getActive())
                 .build();
     }
 }

@@ -21,7 +21,7 @@ public class SystemLogService {
         Staff staff = null;
 
         if (employeeNo != null) {
-            staff = staffRepository.findById(employeeNo)
+            staff = staffRepository.findByEmployeeNo(employeeNo)
                     .orElseThrow(() -> new RuntimeException("직원 정보를 찾을 수 없습니다."));
         }
 

@@ -18,11 +18,19 @@ public class AuthService {
         Staff staff = staffRepository.findByEmployeeNo(request.getEmployeeNo())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 직원 번호입니다."));
 
-        if (!request.getPassword().equals(staff.getPassword())) {
+        // ✅ 활성 계정 체크
+        if (staff.getActive() != 1) {
+            throw new RuntimeException("비활성화된 계정입니다. 관리자에게 문의하세요.");
+        }
+
+        // ✅ 평문 + 하이픈 제거 비교
+        String inputPw = request.getPassword().replace("-", "");
+        String savedPw = staff.getPassword().replace("-", "");
+
+        if (!inputPw.equals(savedPw)) {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
-        // ✅ employeeNo 기준으로 토큰 생성
         String token = jwtProvider.createToken(
                 staff.getEmployeeNo(),
                 staff.getRole().name()
@@ -31,9 +39,8 @@ public class AuthService {
         return new AuthResponseDto(
                 token,
                 staff.getRole().name(),
-                staff.getEmployeeNo(), // ✅ 여기서도 employeeNo
+                staff.getEmployeeNo(),
                 staff.getName()
         );
     }
 }
-

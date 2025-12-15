@@ -13,8 +13,12 @@ import java.time.LocalDateTime;
 public class Staff {
 
     @Id
-    @Column(length = 20)
-    private String employeeNo;  // 직원번호를 PK로 사용
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "STAFF_ID")
+    private Long id;
+
+    @Column(name = "EMPLOYEE_NO", nullable = false, unique = true)
+    private String employeeNo;
 
     private String name;
 
@@ -23,13 +27,17 @@ public class Staff {
 
     private String phone;
 
+    @Column(name = "EMAIL")
     private String email;
 
+    @Column(name = "PASSWORD")
     private String password;
 
-    private int active;  // 1 = 활성화, 0 = 비활성화
+    private int active;
 
+    @Column(name = "CREATED_AT")
     private LocalDateTime createdAt;
 
+    @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 }

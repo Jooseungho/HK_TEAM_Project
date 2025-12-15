@@ -24,7 +24,7 @@ public class VitalService {
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new RuntimeException("내원 정보 없음"));
 
-        Staff nurseId = staffRepository.findById(employeeNo)
+        Staff nurseId = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("간호사 정보 없음"));
 
         Vital vital = Vital.builder()
