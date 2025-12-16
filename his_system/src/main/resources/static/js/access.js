@@ -15,4 +15,10 @@ function checkAccess(allowedRoles = []) {
         location.href = "/html/login.html";
         return;
     }
+	
+	// 3) 관리자만 접근 가능
+	if (role !== "ADMIN") {
+	        alert("관리자만 접근 가능합니다.");
+	        location.href = "/html/common/login.html";
+	}
 }

@@ -5,6 +5,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "STAFF")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,8 +14,12 @@ import java.time.LocalDateTime;
 public class Staff {
 
     @Id
-    @Column(length = 20)
-    private String employeeNo;  // 직원번호를 PK로 사용
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "STAFF_ID")
+    private Long staffId;   // 🔥 숫자 PK
+
+    @Column(name = "EMPLOYEE_NO", length = 20, unique = true, nullable = false)
+    private String employeeNo;  // 직원번호 (로그인 ID)
 
     private String name;
 
@@ -22,14 +27,12 @@ public class Staff {
     private StaffRole role;
 
     private String phone;
-
     private String email;
-
     private String password;
 
-    private int active;  // 1 = 활성화, 0 = 비활성화
+    private int active;
 
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 }
+

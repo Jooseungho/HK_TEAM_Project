@@ -3,6 +3,8 @@ package com.his.system.auth;
 import com.his.system.config.JwtProvider;
 import com.his.system.staff.Staff;
 import com.his.system.staff.StaffRepository;
+import com.his.system.systemlog.SystemLogActionType;
+import com.his.system.systemlog.SystemLoggable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,8 @@ public class AuthService {
     private final StaffRepository staffRepository;
     private final JwtProvider jwtProvider;
 
+    // 🔥 로그인 로그 자동 기록
+    @SystemLoggable(action = SystemLogActionType.LOGIN)
     public AuthResponseDto login(AuthRequestDto request) {
 
         Staff staff = staffRepository.findByEmployeeNo(request.getEmployeeNo())
@@ -22,7 +26,6 @@ public class AuthService {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
-        // ✅ employeeNo 기준으로 토큰 생성
         String token = jwtProvider.createToken(
                 staff.getEmployeeNo(),
                 staff.getRole().name()
@@ -31,9 +34,8 @@ public class AuthService {
         return new AuthResponseDto(
                 token,
                 staff.getRole().name(),
-                staff.getEmployeeNo(), // ✅ 여기서도 employeeNo
+                staff.getEmployeeNo(),
                 staff.getName()
         );
     }
 }
-

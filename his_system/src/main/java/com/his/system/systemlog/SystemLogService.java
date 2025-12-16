@@ -15,15 +15,15 @@ public class SystemLogService {
     private final SystemLogRepository logRepository;
     private final StaffRepository staffRepository;
 
-    // 로그 저장
-    public SystemLog createLog(String employeeNo, String actionType, Long targetId, String description) {
-
-        Staff staff = null;
-
-        if (employeeNo != null) {
-            staff = staffRepository.findById(employeeNo)
-                    .orElseThrow(() -> new RuntimeException("직원 정보를 찾을 수 없습니다."));
-        }
+    // 로그 저장 (직원 필수)
+    public SystemLog createLog(
+            String employeeNo,
+            String actionType,
+            Long targetId,
+            String description
+    ) {
+        Staff staff = staffRepository.findByEmployeeNo(employeeNo)
+                .orElseThrow(() -> new RuntimeException("직원 정보를 찾을 수 없습니다."));
 
         SystemLog log = SystemLog.builder()
                 .staff(staff)
@@ -36,22 +36,15 @@ public class SystemLogService {
         return logRepository.save(log);
     }
 
-    // 전체 로그 조회
     public List<SystemLog> getAllLogs() {
         return logRepository.findAll();
     }
 
     public List<SystemLog> getLogsByStaff(String employeeNo) {
-        return logRepository.findAll().stream()
-                .filter(log -> log.getStaff() != null && log.getStaff().getEmployeeNo().equals(employeeNo))
-                .toList();
+        return logRepository.findByStaff_EmployeeNo(employeeNo);
     }
 
-
-    // 특정 대상(환자, 내원, 처방 등) 로그 조회
     public List<SystemLog> getLogsByTarget(Long targetId) {
-        return logRepository.findAll().stream()
-                .filter(log -> log.getTargetId() != null && log.getTargetId().equals(targetId))
-                .toList();
+        return logRepository.findByTargetId(targetId);
     }
 }
