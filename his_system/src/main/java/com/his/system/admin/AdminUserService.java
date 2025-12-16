@@ -26,7 +26,7 @@ public class AdminUserService {
         Staff staff = Staff.builder()
                 .employeeNo(request.getEmployeeNo())
                 .name(request.getName())
-                .role(request.getRole())
+                .role(request.getRole())   // StaffRole enum 그대로 사용
                 .phone(request.getPhone())
                 .email(request.getEmail())
                 .password(initPassword)
@@ -49,7 +49,7 @@ public class AdminUserService {
     }
 
     /* =========================
-       단건 조회 (수정 폼 채우기용)
+       단건 조회 (수정 폼용)
     ========================= */
     public UserDTO getUser(String employeeNo) {
         Staff staff = staffRepository.findByEmployeeNo(employeeNo)
@@ -73,12 +73,10 @@ public class AdminUserService {
         staffRepository.save(staff);
     }
 
-    
-    /*===========================
-     * 계정 삭제
-     ===========================*/
-     public void deleteUser(String employeeNo) {
-         staffRepository.deleteByEmployeeNo(employeeNo);
-     }
-
+    /* =========================
+       계정 삭제
+    ========================= */
+    public void deleteUser(String employeeNo) {
+        staffRepository.deleteByEmployeeNo(employeeNo);
+    }
 }

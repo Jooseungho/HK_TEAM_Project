@@ -1,9 +1,9 @@
 package com.his.system.vital;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.his.system.visit.Visit;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,15 +20,14 @@ public class Vital {
     @Column(name = "VITAL_ID")
     private Long id;
 
-    // VISIT FK (정상)
+    // VISIT FK (1 Visit : 1 Vital – 최신 기준)
     @OneToOne
     @JoinColumn(name = "VISIT_ID", nullable = false)
-    @JsonIgnoreProperties({"vital"})
     private Visit visit;
 
-    // NURSE ID → 단순 Long 값
-    @Column(name = "NURSE_ID", nullable = false)
-    private String nurseId;
+    // 간호사 직원번호 (employeeNo)
+    @Column(name = "NURSE_EMPLOYEE_NO", nullable = false)
+    private String nurseEmployeeNo;
 
     @Column(name = "BP_SYSTOLIC")
     private Integer bpSystolic;

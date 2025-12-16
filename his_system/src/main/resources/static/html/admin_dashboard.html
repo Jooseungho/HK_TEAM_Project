@@ -97,10 +97,29 @@
 </head>
 
 <body>
-
+<!-- 🔐 관리자 권한 체크 -->
+<script>
+    checkAccess(["ADMIN"]);
+</script>
 <div class="header">
     <div class="title">관리자 시스템</div>
-    <div id="admin-name"></div>
+
+    <div style="display:flex; align-items:center; gap:12px;">
+        <div id="admin-name"></div>
+
+        <!-- 🔥 로그아웃 버튼 추가 -->
+        <button onclick="logout()"
+                style="
+                    padding:8px 14px;
+                    border:none;
+                    border-radius:6px;
+                    background:#6b50ff;
+                    color:white;
+                    cursor:pointer;
+                ">
+            로그아웃
+        </button>
+    </div>
 </div>
 
 <div class="summary-boxes">

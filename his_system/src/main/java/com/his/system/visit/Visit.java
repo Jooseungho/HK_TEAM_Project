@@ -1,6 +1,9 @@
 package com.his.system.visit;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.his.system.patient.Patient;
+import com.his.system.staff.Staff;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,9 +28,11 @@ public class Visit {
     @JoinColumn(name = "PATIENT_ID", nullable = false)
     private Patient patient;
 
-    // 의사 ID (Staff FK)
-    @Column(name = "DOCTOR_ID")
-    private String doctorId;
+    // 의사 FK (Staff)
+    @ManyToOne
+    @JoinColumn(name = "DOCTOR_ID")
+    @JsonIgnore
+    private Staff doctor;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS")
@@ -44,5 +49,4 @@ public class Visit {
 
     @Column(name = "FINISHED_AT")
     private LocalDateTime endTime;
-
 }

@@ -5,5 +5,6 @@ public enum VisitStatus {
     CALLED,
     IN_TREATMENT,
     DONE,
-    CANCELLED
+    CANCELLED,
+    PAID
 }
