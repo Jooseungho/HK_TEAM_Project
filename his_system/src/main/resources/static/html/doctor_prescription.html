@@ -202,6 +202,38 @@ function deleteDrug(idx) {
     drugList.splice(idx, 1);
     renderDrugList();
 }
+async function loadDrugStatus() {
+    const res = await fetch("/api/drug/status");
+    const list = await res.json();
+
+    const area = document.getElementById("drug-status-area");
+    area.innerHTML = "";
+
+    list.forEach(d => {
+        const danger = d.stockQuantity <= d.minStock;
+
+        area.innerHTML += `
+            <div style="margin-bottom:10px;">
+                <div>${d.name}</div>
+                <div style="
+                    height:6px;
+                    background:#e5e7eb;
+                    border-radius:4px;
+                ">
+                    <div style="
+                        width:${Math.min(100, d.stockQuantity)}%;
+                        height:100%;
+                        background:${danger ? '#ef4444' : '#22c55e'};
+                        border-radius:4px;
+                    "></div>
+                </div>
+                <div style="font-size:12px; color:${danger ? 'red' : '#6b7280'};">
+                    ${d.stockQuantity} ${d.unit}
+                </div>
+            </div>
+        `;
+    });
+}
 
 /* ---------------------------
    💉 처치 추가 / 렌더링
@@ -257,9 +289,6 @@ function deleteTreatment(idx) {
 async function saveAll() {
     const visitId = sessionStorage.getItem("currentVisitId");
 
-    // ⭐ 로그인한 의사 ID 저장해두면 여기서 자동으로 읽음
-    const doctorId = sessionStorage.getItem("doctorId") || 1;
-
     if (!visitId) {
         alert("현재 선택된 환자가 없습니다.");
         return;
@@ -271,7 +300,7 @@ async function saveAll() {
         treatments: treatmentList
     };
 
-    const res = await fetch(`/api/prescription/create?visitId=${visitId}&doctorId=${doctorId}`, {
+    const res = await fetch(`/api/prescription/create?visitId=${visitId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
@@ -285,6 +314,7 @@ async function saveAll() {
 
     alert("처방이 정상적으로 저장되었습니다.");
 }
+
 
 /* 처음 들어왔을 때 환자 정보 로딩 */
 loadPatientInfo();
