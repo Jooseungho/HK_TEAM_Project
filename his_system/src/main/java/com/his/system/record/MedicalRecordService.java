@@ -24,7 +24,7 @@ public class MedicalRecordService {
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new RuntimeException("visit 없음"));
 
-        Staff doctor = staffRepository.findById(employeeNo)
+        Staff doctor = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("doctor 없음"));
 
         MedicalRecord record = MedicalRecord.builder()

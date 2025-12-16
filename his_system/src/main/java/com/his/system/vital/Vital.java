@@ -1,56 +1,41 @@
+// 🔹 Vital.java (nurseId를 String employeeNo로 저장)
 package com.his.system.vital;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.his.system.staff.Staff;
 import com.his.system.visit.Visit;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "VITAL")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Vital {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "VITAL_ID")
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "VITAL_ID") // ⭐ 핵심
+	private Long id;
+	
+	@ManyToOne
+	@JoinColumn(name = "VISIT_ID", nullable = false)
+	private Visit visit;
 
-    // VISIT FK (정상)
-    @OneToOne
-    @JoinColumn(name = "VISIT_ID", nullable = false)
-    @JsonIgnoreProperties({"vital"})
-    private Visit visit;
+	@Column(name = "NURSE_EMPLOYEE_NO", nullable = false)
+	private String nurseEmployeeNo;
 
-    // NURSE ID → 단순 Long 값
-    @Column(name = "NURSE_ID", nullable = false)
-    private String nurseId;
+	private Integer bpSystolic;
+	private Integer bpDiastolic;
+	private Integer heartRate;
+	private Double temperature;
+	private Integer respiration;
+	private Integer spo2;
 
-    @Column(name = "BP_SYSTOLIC")
-    private Integer bpSystolic;
+	private String memo;
 
-    @Column(name = "BP_DIASTOLIC")
-    private Integer bpDiastolic;
-
-    @Column(name = "HEART_RATE")
-    private Integer heartRate;
-
-    @Column(name = "TEMPERATURE")
-    private Double temperature;
-
-    @Column(name = "RESPIRATION")
-    private Integer respiration;
-
-    @Column(name = "SPO2")
-    private Integer spo2;
-
-    @Column(name = "MEMO", length = 255)
-    private String memo;
-
-    @Column(name = "MEASURED_AT", nullable = false)
-    private LocalDateTime measuredAt;
+	private LocalDateTime measuredAt;
 }

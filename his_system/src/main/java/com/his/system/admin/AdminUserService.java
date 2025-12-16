@@ -25,8 +25,8 @@ public class AdminUserService {
         Staff staff = Staff.builder()
                 .employeeNo(request.getEmployeeNo())
                 .name(request.getName())
-                .role(request.getRole())   // 이미 enum
-                .phone(request.getPhone())
+                .role(StaffRole.valueOf(request.getRole()))   // 이미 enum
+                .Phone(request.getPhone())
                 .email(request.getEmail())
                 .password(initPassword)
                 .createdAt(LocalDateTime.now())

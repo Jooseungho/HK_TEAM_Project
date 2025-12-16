@@ -10,4 +10,5 @@ public class AuthResponseDto {
     private String role;
     private String employeeNo;
     private String name;
+    
 }

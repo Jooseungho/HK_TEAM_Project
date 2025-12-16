@@ -1,6 +1,8 @@
 package com.his.system.admin;
 
 import com.his.system.staff.Staff;
+import com.his.system.staff.StaffRole;
+
 import lombok.Builder;
 import lombok.Getter;
 

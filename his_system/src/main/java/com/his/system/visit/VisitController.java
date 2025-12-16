@@ -5,6 +5,7 @@ import com.his.system.visit.dto.VisitRequest;
 import com.his.system.vital.Vital;
 import com.his.system.vital.VitalService;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,12 +21,23 @@ public class VisitController {
 
     private final VisitService visitService;
     private final VitalService vitalService;
+    private final VisitRepository visitRepository;
 
-    // 🟦 접수 등록
     @PostMapping("/register")
-    public Visit registerVisit(@RequestBody VisitRequest request) {
-        return visitService.registerVisit(request);
+    public Visit registerVisit(
+            @RequestBody VisitRequest request,
+            HttpSession session
+    ) {
+        String employeeNo =
+            (String) session.getAttribute("LOGIN_EMPLOYEE_NO");
+
+        if (employeeNo == null) {
+            throw new RuntimeException("로그인 필요");
+        }
+
+        return visitService.registerVisit(request, employeeNo);
     }
+
 
     // 🟦 대기 환자 리스트 (Visit + Patient + 최신 Vital 포함)
     @GetMapping("/waiting_list")
@@ -38,10 +50,10 @@ public class VisitController {
 
             Map<String, Object> map = new HashMap<>();
             map.put("id", v.getId());
+            map.put("status", v.getStatus());          // ✅ 이 줄 추가
             map.put("arrivalTime", v.getArrivalTime());
             map.put("patient", v.getPatient());
 
-            // ⭐ 최신 vital 포함
             Vital latestVital = vitalService.getLatestByVisit(v.getId());
             map.put("vital", latestVital);
 
@@ -51,13 +63,66 @@ public class VisitController {
         return result;
     }
 
-    // 🟦 환자 호출 → Visit 상태 변경 + doctor 저장
-    @PostMapping("/call/{visitId}/{doctorId}")
+
+    
+    @GetMapping("/in-treatment")
+    public List<Map<String, Object>> getInTreatment() {
+
+        List<Visit> list = visitService.getInTreatmentList();
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Visit v : list) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", v.getId());
+            map.put("arrivalTime", v.getArrivalTime());
+            map.put("status", v.getStatus());          // ✅ 추가
+            map.put("startTime", v.getStartTime());    // ✅ 추가
+            map.put("patient", v.getPatient());
+
+            Vital vital = vitalService.getLatestByVisit(v.getId());
+            map.put("vital", vital);
+
+            result.add(map);
+        }
+
+        return result;
+    }
+
+
+    @GetMapping("/status_counts")
+    public Map<String, Long> getStatusCounts() {
+
+        Map<String, Long> result = new HashMap<>();
+
+        long waiting = visitRepository.countByStatus(VisitStatus.WAITING);
+
+        long inTreatment = visitRepository.countByStatusIn(
+            List.of(VisitStatus.CALLED, VisitStatus.IN_TREATMENT)
+        );
+
+        long done = visitRepository.countByStatus(VisitStatus.DONE);
+
+        result.put("WAITING", waiting);
+        result.put("IN_TREATMENT", inTreatment);
+        result.put("DONE", done);
+
+        return result;
+    }
+
+
+    @PostMapping("/call/{visitId}")
     public Visit callPatient(
-            @PathVariable Long visitId,
-            @PathVariable String doctorId
+        @PathVariable Long visitId,
+        HttpSession session
     ) {
-        return visitService.callPatient(visitId, doctorId);
+        String employeeNo =
+            (String) session.getAttribute("LOGIN_EMPLOYEE_NO");
+
+        if (employeeNo == null) {
+            throw new RuntimeException("로그인 필요");
+        }
+
+        return visitService.callPatient(visitId, employeeNo);
     }
 
     // 🟦 진료 시작
@@ -72,6 +137,8 @@ public class VisitController {
         return visitService.completeVisit(visitId);
     }
 
+    
+    
     // 🟦 상세 보기 (Visit + Patient + 최신 Vital)
     @GetMapping("/{visitId}/detail")
     public Map<String, Object> detail(@PathVariable Long visitId) {

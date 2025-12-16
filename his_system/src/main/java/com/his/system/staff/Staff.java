@@ -1,35 +1,35 @@
+// 🔹 Staff.java (엔티티)
 package com.his.system.staff;
+
+import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Staff {
 
-    @Id
-    @Column(length = 20)
-    private String employeeNo;  // 직원번호를 PK로 사용
+	@Id
+	@Column(name = "STAFF_ID")
+	private Long staffId; // 🔥 이게 핵심
 
-    private String name;
+	@Column(name = "EMPLOYEE_NO", unique = true)
+	private String employeeNo;
+	private String Phone;
+	private String email;
+	private String name;
+	private String password;
+	@Enumerated(EnumType.STRING)
+	
+	@Column(name = "ROLE")
+	private StaffRole role;
 
-    @Enumerated(EnumType.STRING)
-    private StaffRole role;
-
-    private String phone;
-
-    private String email;
-
-    private String password;
-
-    private int active;  // 1 = 활성화, 0 = 비활성화
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
+	private int active;
 }

@@ -38,7 +38,7 @@ public class DrugService {
     public Drug increaseStock(Long drugId, String employeeNo, int quantity, String memo) {
 
         Drug drug = getDrug(drugId);
-        Staff staff = staffRepository.findById(employeeNo)
+        Staff staff = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("직원 정보 없음"));
 
         drug.setStockQuantity(drug.getStockQuantity() + quantity);
@@ -64,7 +64,7 @@ public class DrugService {
     public Drug decreaseStock(Long drugId, String employeeNo, int quantity, String memo) {
 
         Drug drug = getDrug(drugId);
-        Staff staff = staffRepository.findById(employeeNo)
+        Staff staff = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("직원 정보 없음"));
 
         if (drug.getStockQuantity() < quantity) {

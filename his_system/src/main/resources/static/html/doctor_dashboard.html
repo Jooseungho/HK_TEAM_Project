@@ -36,7 +36,6 @@
 
 <header>
     <div style="display:flex; align-items:center; gap:10px;">
-        <img src="/static/icon_doctor.svg" width="30">
         의사 진료 시스템
     </div>
 
@@ -88,18 +87,19 @@
     상단 카드 카운트 로드
 ------------------------------- */
 async function loadDashboardCounts() {
-	const res = await fetch("/api/visit/waiting_list");
+
+    const res = await fetch("/api/visit/status_counts");
     if (!res.ok) return;
 
-    const list = await res.json();
+    const data = await res.json();
 
-    const waiting = list.length;
-    const inTreatment = 0;
-    const done = 0;
 
-    document.getElementById("waiting-count").innerText = `${list.length}명`;
-    document.getElementById("on-treatment-count").innerText = `0명`;
-    document.getElementById("done-count").innerText = `0명`;
+    document.getElementById("waiting-count").innerText =
+        `${data.WAITING ?? 0}명`;
+    document.getElementById("on-treatment-count").innerText =
+        `${data.IN_TREATMENT ?? 0}명`;
+    document.getElementById("done-count").innerText =
+        `${data.DONE ?? 0}명`;
 }
 
 /* ------------------------------------

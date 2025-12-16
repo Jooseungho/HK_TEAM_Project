@@ -4,6 +4,8 @@ import com.his.system.visit.Visit;
 import com.his.system.visit.VisitRepository;
 import com.his.system.staff.Staff;
 import com.his.system.staff.StaffRepository;
+import com.his.system.staff.StaffRole;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,18 +20,26 @@ public class VitalService {
     private final VisitRepository visitRepository;
     private final StaffRepository staffRepository;
 
-    // 🟦 바이탈 입력
-    public Vital createVital(Long visitId, String employeeNo, Vital vitalData) {
+    // 🔥 Vital 생성 (정석)
+    @Transactional
+    public Vital createVital(Long visitId, String nurseEmployeeNo, Vital vitalData) {
 
+        // 1️⃣ visit 검증
         Visit visit = visitRepository.findById(visitId)
-                .orElseThrow(() -> new RuntimeException("내원 정보 없음"));
+                .orElseThrow(() -> new RuntimeException("visit 없음"));
 
-        Staff nurseId = staffRepository.findById(employeeNo)
-                .orElseThrow(() -> new RuntimeException("간호사 정보 없음"));
+        // 2️⃣ nurse 검증
+        Staff nurse = staffRepository.findByEmployeeNo(nurseEmployeeNo)
+                .orElseThrow(() -> new RuntimeException("간호사 없음"));
 
+        if (nurse.getRole() != StaffRole.NURSE) {
+            throw new RuntimeException("간호사만 Vital 입력 가능");
+        }
+
+        // 3️⃣ Vital 구성 (객체 연결 ❌ / 값만 저장 ⭕)
         Vital vital = Vital.builder()
                 .visit(visit)
-                .nurseId(employeeNo)
+                .nurseEmployeeNo(nurseEmployeeNo)
                 .bpSystolic(vitalData.getBpSystolic())
                 .bpDiastolic(vitalData.getBpDiastolic())
                 .heartRate(vitalData.getHeartRate())
@@ -43,7 +53,7 @@ public class VitalService {
         return vitalRepository.save(vital);
     }
 
-    // 🟦 방문별 모든 Vital 목록
+    // 🟦 방문별 Vital 목록
     public List<Vital> getVitalsByVisit(Long visitId) {
         return vitalRepository.findAllByVisitIdOrderByMeasuredAtDesc(visitId);
     }
@@ -54,7 +64,7 @@ public class VitalService {
                 .orElseThrow(() -> new RuntimeException("바이탈 데이터 없음"));
     }
 
-    // 🟦 최신 Vital 조회 (가장 중요)
+    // 🟦 최신 Vital
     public Vital getLatestByVisit(Long visitId) {
         return vitalRepository.findTopByVisitIdOrderByMeasuredAtDesc(visitId);
     }

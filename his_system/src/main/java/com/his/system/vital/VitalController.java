@@ -18,6 +18,8 @@ public class VitalController {
                              @RequestParam String nurseId,
                              @RequestBody Vital vitalData) {
 
+    	System.out.println("nurseId"+nurseId);
+    	
         return vitalService.createVital(visitId, nurseId, vitalData);
     }
 
