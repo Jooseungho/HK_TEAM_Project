@@ -1,25 +1,30 @@
 package com.his.system.staff;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class StaffDTO {
+
     private String employeeNo;
     private String name;
-    private StaffRole role;
+    private String role;
     private String phone;
     private String email;
-    private Boolean active;
+    private boolean active;
 
-    public static StaffDTO fromEntity(Staff staff) {
-        return StaffDTO.builder()
-                .employeeNo(staff.getEmployeeNo())
-                .name(staff.getName())
-                .role(staff.getRole())
-                .phone(staff.getPhone())
-                .email(staff.getEmail())
-                .build();
+    // 🔥 핵심: 이 메서드가 없어서 오류 발생
+    public static StaffDTO from(Staff staff) {
+        return new StaffDTO(
+                staff.getEmployeeNo(),
+                staff.getName(),
+                staff.getRole().name(),
+                staff.getPhone(),
+                staff.getEmail(),
+                staff.isActive()
+        );
     }
 }

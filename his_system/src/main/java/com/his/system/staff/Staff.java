@@ -30,7 +30,8 @@ public class Staff {
     private String email;
     private String password;
 
-    private int active;
+    @Column(name = "active")
+    private boolean active;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

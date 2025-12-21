@@ -3,6 +3,7 @@ package com.his.system.staff;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -18,7 +19,11 @@ public class StaffController {
     }
 
     @GetMapping("/{employeeNo}")
-    public ResponseEntity<StaffDTO> getStaffByEmployeeNo(@PathVariable String employeeNo) {
-        return ResponseEntity.ok(staffService.getStaffByEmployeeNo(employeeNo));
+    public ResponseEntity<StaffDTO> getStaffByEmployeeNo(
+            @PathVariable String employeeNo
+    ) {
+        return ResponseEntity.ok(
+                staffService.getStaffByEmployeeNo(employeeNo)
+        );
     }
 }

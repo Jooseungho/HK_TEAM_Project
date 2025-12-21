@@ -6,6 +6,7 @@
 
     <!-- 🔐 관리자 접근 제어 -->
     <script src="/js/access.js"></script>
+    <script src="/js/app.js"></script>
 
     <style>
         body {
@@ -14,7 +15,6 @@
             margin: 0;
         }
 
-        /* ===== 헤더 ===== */
         .header {
             background: #fff;
             padding: 20px 30px;
@@ -25,7 +25,6 @@
         }
         .title { font-size: 20px; font-weight: 700; }
 
-        /* ===== 요약 카드 ===== */
         .summary-boxes {
             display: flex;
             gap: 20px;
@@ -41,7 +40,6 @@
         .box-title { font-size: 15px; color: #555; }
         .box-value { margin-top: 8px; font-size: 28px; font-weight: 700; }
 
-        /* ===== 메뉴 ===== */
         .menu {
             display: flex;
             gap: 20px;
@@ -61,10 +59,8 @@
             color: #6b50ff;
         }
 
-        /* ===== 본문 ===== */
         .content { padding: 25px 30px; }
 
-        /* 검색/필터 */
         .filter-box {
             display: flex;
             gap: 10px;
@@ -77,7 +73,6 @@
             font-size: 14px;
         }
 
-        /* 테이블 */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -99,7 +94,6 @@
             text-align: center;
         }
 
-        /* 페이지네이션 */
         .pagination { margin-top: 20px; text-align: center; }
         .pagination button {
             padding: 6px 12px;
@@ -114,22 +108,25 @@
 <!-- ===== 헤더 ===== -->
 <div class="header">
     <div class="title">관리자 시스템</div>
-    <div id="admin-name"></div>
+    <div style="display:flex; gap:15px; align-items:center;">
+        <div id="admin-name"></div>
+        <button class="btn" onclick="logout()">로그아웃</button>
+    </div>
 </div>
 
 <!-- ===== 요약 ===== -->
 <div class="summary-boxes">
     <div class="box">
-        <div class="box-title">오늘 로그인</div>
+        <div class="box-title">로그인</div>
         <div class="box-value" id="loginCount">0회</div>
+    </div>
+    <div class="box">
+        <div class="box-title">로그아웃</div>
+        <div class="box-value" id="logoutCount">0회</div>
     </div>
     <div class="box">
         <div class="box-title">EMR 조회</div>
         <div class="box-value" id="emrViewCount">0건</div>
-    </div>
-    <div class="box">
-        <div class="box-title">문서 발행</div>
-        <div class="box-value" id="docIssueCount">0건</div>
     </div>
 </div>
 
@@ -142,15 +139,17 @@
 
 <!-- ===== 본문 ===== -->
 <div class="content">
+
     <!-- 검색/필터 -->
     <div class="filter-box">
         <input type="text" id="employeeNo" placeholder="직원번호">
         <select id="actionType">
             <option value="">전체 작업</option>
             <option value="LOGIN">로그인</option>
+            <option value="LOGOUT">로그아웃</option>
             <option value="EMR_VIEW">EMR 조회</option>
             <option value="PATIENT_REGISTER">환자 접수</option>
-            <option value="DOC_ISSUE">문서 발행</option>
+            <option value="DOCUMENT_ISSUE">문서 발행</option>
         </select>
         <input type="datetime-local" id="from">
         <input type="datetime-local" id="to">
@@ -171,17 +170,17 @@
         <tbody id="logTableBody"></tbody>
     </table>
 
-    <!-- 페이지네이션 -->
     <div class="pagination" id="pagination"></div>
 </div>
 
 <script>
-/* ===== 관리자 권한 체크 ===== */
-checkAdminAccess();
+/* 관리자 권한 + 이름 */
+checkAccess(["ADMIN"]);
 
-/* 관리자 이름 표시 */
 const name = localStorage.getItem("name");
-if (name) document.getElementById("admin-name").innerText = `${name} 님`;
+if (name) {
+    document.getElementById("admin-name").innerText = `${name} 님 환영합니다`;
+}
 
 /* ===== 로그 로딩 ===== */
 async function loadLogs(page) {
@@ -202,15 +201,14 @@ async function loadLogs(page) {
     const tbody = document.getElementById("logTableBody");
     tbody.innerHTML = "";
 
-    // 백엔드가 Page가 아니라 List를 반환하는 경우도 대비
     const rows = data.content ?? data;
 
-    let loginCnt = 0, emrCnt = 0, docCnt = 0;
+    let loginCnt = 0, logoutCnt = 0, emrCnt = 0;
 
     rows.forEach(log => {
         if (log.actionType === "LOGIN") loginCnt++;
+        if (log.actionType === "LOGOUT") logoutCnt++;
         if (log.actionType === "EMR_VIEW") emrCnt++;
-        if (log.actionType === "DOC_ISSUE") docCnt++;
 
         tbody.innerHTML += `
             <tr>
@@ -224,25 +222,23 @@ async function loadLogs(page) {
     });
 
     document.getElementById("loginCount").innerText = `${loginCnt}회`;
+    document.getElementById("logoutCount").innerText = `${logoutCnt}회`;
     document.getElementById("emrViewCount").innerText = `${emrCnt}건`;
-    document.getElementById("docIssueCount").innerText = `${docCnt}건`;
 
     renderPagination(data);
 }
 
-/* ===== 페이지네이션 ===== */
+/* 페이지네이션 */
 function renderPagination(data) {
     const container = document.getElementById("pagination");
     container.innerHTML = "";
-
-    if (!data.totalPages) return; // List 반환 시
+    if (!data.totalPages) return;
 
     for (let i = 0; i < data.totalPages; i++) {
         container.innerHTML += `<button onclick="loadLogs(${i})">${i + 1}</button>`;
     }
 }
 
-/* 최초 로딩 */
 window.addEventListener("DOMContentLoaded", () => loadLogs(0));
 </script>
 

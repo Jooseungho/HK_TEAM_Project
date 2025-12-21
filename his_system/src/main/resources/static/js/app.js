@@ -2,7 +2,18 @@ function getToken() {
     return localStorage.getItem("token");
 }
 
-function logout() {
+async function logout() {
+    try {
+        await fetch("/api/admin/system-logs/logout-log", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + getToken()
+            }
+        });
+    } catch (e) {
+        // 로그 실패해도 로그아웃은 진행
+    }
+
     localStorage.removeItem("token");
     location.href = "/html/login.html";
 }
@@ -16,4 +27,5 @@ async function apiGet(url) {
         }
     }).then(res => res.json());
 }
+
 window.logout = logout;

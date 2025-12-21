@@ -15,6 +15,11 @@ public class AuthService {
     private final StaffRepository staffRepository;
     private final JwtProvider jwtProvider;
 
+    // 🔹 전화번호/비밀번호 정규화
+    private String normalizePhone(String value) {
+        return value == null ? null : value.replaceAll("[^0-9]", "");
+    }
+
     // 🔥 로그인 로그 자동 기록
     @SystemLoggable(action = SystemLogActionType.LOGIN)
     public AuthResponseDto login(AuthRequestDto request) {
@@ -22,7 +27,10 @@ public class AuthService {
         Staff staff = staffRepository.findByEmployeeNo(request.getEmployeeNo())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 직원 번호입니다."));
 
-        if (!request.getPassword().equals(staff.getPassword())) {
+        String inputPw = normalizePhone(request.getPassword());
+        String savedPw = normalizePhone(staff.getPassword());
+
+        if (!inputPw.equals(savedPw)) {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 

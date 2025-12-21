@@ -20,15 +20,11 @@ public class Vital {
     @Column(name = "VITAL_ID")
     private Long id;
 
-    // VISIT FK (정상)
+    // VISIT FK
     @OneToOne
     @JoinColumn(name = "VISIT_ID", nullable = false)
     @JsonIgnoreProperties({"vital"})
     private Visit visit;
-
-    // NURSE ID → 단순 Long 값
-    @Column(name = "NURSE_ID", nullable = false)
-    private String nurseId;
 
     @Column(name = "BP_SYSTOLIC")
     private Integer bpSystolic;

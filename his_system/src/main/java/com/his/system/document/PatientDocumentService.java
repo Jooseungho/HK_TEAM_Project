@@ -25,7 +25,7 @@ public class PatientDocumentService {
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new RuntimeException("내원 정보 없음"));
 
-        Staff staff = staffRepository.findById(employeeNo)
+        Staff staff = staffRepository.findById(Long.parseLong(employeeNo))
                 .orElseThrow(() -> new RuntimeException("직원 정보 없음"));
 
         PatientDocument doc = PatientDocument.builder()

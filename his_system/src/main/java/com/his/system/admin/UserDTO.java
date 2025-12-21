@@ -13,6 +13,7 @@ public class UserDTO {
     private String phone;
     private String email;
     private String role;
+    private boolean active;   // ⭐ 필수
 
     public static UserDTO fromEntity(Staff staff) {
         return UserDTO.builder()
@@ -21,6 +22,8 @@ public class UserDTO {
                 .phone(staff.getPhone())
                 .email(staff.getEmail())
                 .role(staff.getRole().name())
+                .active(staff.isActive())
                 .build();
     }
 }
+

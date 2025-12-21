@@ -1,6 +1,6 @@
 package com.his.system.systemlog;
 
-import com.his.system.systemlog.SystemLogResponseDto;
+import com.his.system.config.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -14,7 +14,10 @@ import java.time.LocalDateTime;
 public class SystemLogAdminController {
 
     private final SystemLogAdminService systemLogAdminService;
+    private final SystemLogService systemLogService;
+    private final JwtProvider jwtProvider;   // ✅ 핵심 추가
 
+    // 로그 조회
     @GetMapping
     public Page<SystemLogResponseDto> getSystemLogs(
             @RequestParam(required = false) String employeeNo,
@@ -38,6 +41,22 @@ public class SystemLogAdminController {
                 to,
                 page,
                 size
+        );
+    }
+
+    // 로그아웃 로그 기록
+    @PostMapping("/logout-log")
+    public void logoutLog(
+            @RequestHeader("Authorization") String authorization
+    ) {
+        String token = authorization.replace("Bearer ", "");
+        String employeeNo = jwtProvider.getEmployeeNo(token);
+
+        systemLogService.createLog(
+                employeeNo,
+                SystemLogActionType.LOGOUT.name(),
+                null,
+                "로그아웃"
         );
     }
 }

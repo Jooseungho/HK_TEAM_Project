@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>관리자 시스템</title>
-    
-    <!-- 🔥 추가: 접근 권한 / 이름 표시 / 로그아웃 기능 -->
+
     <script src="/js/access.js"></script>
-	<script src="/js/app.js"></script>
-    
+    <script src="/js/app.js"></script>
+
     <style>
         body {
             font-family: Pretendard, sans-serif;
             background: #f8f9fb;
-            padding: 0;
             margin: 0;
         }
 
@@ -24,18 +22,13 @@
             align-items: center;
             border-bottom: 1px solid #eee;
         }
-
-        .header .title {
-            font-size: 20px;
-            font-weight: 700;
-        }
+        .header .title { font-size: 20px; font-weight: 700; }
 
         .summary-boxes {
             display: flex;
             gap: 20px;
             padding: 20px 30px;
         }
-
         .box {
             flex: 1;
             background: #fff;
@@ -43,23 +36,14 @@
             border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
+        .box-title { font-size: 15px; color: #555; }
+        .box-value { margin-top: 8px; font-size: 28px; font-weight: 700; }
 
-        .box-title {
-            font-size: 15px;
-            color: #555;
-        }
-        .box-value {
-            margin-top: 8px;
-            font-size: 28px;
-            font-weight: 700;
-        }
-
-        /* 메뉴 */
+        /* 🔥 메뉴 */
         .menu {
             display: flex;
             gap: 20px;
             padding: 0 30px;
-            margin-top: 10px;
             border-bottom: 1px solid #eee;
         }
         .menu a {
@@ -74,39 +58,41 @@
             color: #6b50ff;
         }
 
-        /* 계정 테이블 */
-        .content {
-            padding: 25px 30px;
-        }
+        .content { padding: 25px 30px; }
+        .layout { display: flex; gap: 30px; }
 
         table {
             width: 100%;
             border-collapse: collapse;
             background: white;
             border-radius: 12px;
-            overflow: hidden;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-
         th {
             background: #f3f4f6;
             padding: 12px;
-            text-align: left;
             font-size: 14px;
         }
         td {
             padding: 12px;
             border-top: 1px solid #eee;
             font-size: 14px;
+            vertical-align: middle; /* 🔥 정렬 */
+        }
+
+        /* 🔥 관리 버튼 정렬 */
+        td:last-child {
+            display: flex;
+            gap: 6px;
+            align-items: center;
         }
 
         .tag {
-            display: inline-block;
             padding: 3px 10px;
             border-radius: 6px;
             font-size: 12px;
-            font-weight: 600;
             color: white;
+            font-weight: 600;
         }
         .tag.doctor { background: #4f46e5; }
         .tag.nurse { background: #16a34a; }
@@ -117,65 +103,53 @@
             border-radius: 6px;
             border: none;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
         }
-        .btn-edit {
-            background: #6b50ff;
-            color: white;
-        }
-        .btn-delete {
-            background: #ef4444;
-            color: white;
-        }
+        .btn-edit { background: #6b50ff; color: white; }
+        .btn-delete { background: #ef4444; color: white; }
+        .btn-toggle { background: #64748b; color: white; }
 
-        /* 오른쪽 계정 생성 */
         .create-panel {
-            margin-top: 20px;
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             width: 350px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-
-        .panel-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
+        .panel-title { font-size: 18px; font-weight: 700; }
 
         input, select {
             width: 100%;
             padding: 10px;
             margin-top: 8px;
-            border: 1px solid #ddd;
             border-radius: 6px;
+            border: 1px solid #ddd;
         }
-
         .btn-create {
             margin-top: 20px;
             width: 100%;
             padding: 12px;
             background: #6b50ff;
             color: white;
-            border: none;
             border-radius: 6px;
             font-size: 16px;
             cursor: pointer;
-        }
-
-        .layout {
-            display: flex;
-            gap: 30px;
         }
     </style>
 </head>
 
 <body>
 
+<script>
+    checkAccess(["ADMIN"]);
+</script>
+
 <div class="header">
     <div class="title">관리자 시스템</div>
-    <div id="admin-name"></div>
+    <div style="display:flex; align-items:center; gap:12px;">
+        <div id="admin-name"></div>
+        <button onclick="logout()" class="btn btn-edit">로그아웃</button>
+    </div>
 </div>
 
 <div class="summary-boxes">
@@ -187,23 +161,19 @@
         <div class="box-title">활성 계정</div>
         <div class="box-value" id="activeCount">0명</div>
     </div>
-    <div class="box">
-        <div class="box-title">재고 부족</div>
-        <div class="box-value">2개</div>
-    </div>
 </div>
 
+<!-- 🔥 메뉴 href 복구 -->
 <div class="menu">
     <a href="/html/admin_dashboard.html" class="active">계정 관리</a>
     <a href="/html/log.html">시스템 로그</a>
     <a href="/html/inventory.html">재고 관리</a>
 </div>
 
-
 <div class="content layout">
 
-    <!-- 왼쪽 계정 테이블 -->
-    <div style="flex: 1">
+    <!-- 왼쪽: 계정 테이블 -->
+    <div style="flex:1">
         <table>
             <thead>
             <tr>
@@ -212,6 +182,7 @@
                 <th>역할</th>
                 <th>연락처</th>
                 <th>이메일</th>
+                <th>상태</th>
                 <th>관리</th>
             </tr>
             </thead>
@@ -219,11 +190,10 @@
         </table>
     </div>
 
-    <!-- 오른쪽 계정 생성 패널 -->
+    <!-- 오른쪽: 생성/수정 -->
     <div class="create-panel">
-        <div class="panel-title">신규 계정 생성</div>
-
-        <input id="empId" placeholder="직원번호 (예: D001)">
+        <div class="panel-title">계정 생성 / 수정</div>
+        <input id="empId" placeholder="직원번호">
         <input id="name" placeholder="이름">
         <select id="role">
             <option value="DOCTOR">의사</option>
@@ -231,13 +201,15 @@
             <option value="ADMIN">관리자</option>
         </select>
         <input id="email" placeholder="이메일">
-        <input id="phone" placeholder="연락처 (010-0000-0000)">
+        <input id="phone" placeholder="연락처">
         <button class="btn-create" onclick="createUser()">생성</button>
     </div>
 
 </div>
 
 <script>
+let editingEmployeeNo = null;
+
 async function loadUsers() {
     const res = await fetch("/api/admin/users");
     const list = await res.json();
@@ -245,79 +217,130 @@ async function loadUsers() {
     const table = document.getElementById("userTable");
     table.innerHTML = "";
 
-    list.forEach(u => {
-        table.innerHTML += `
-            <tr>
-        		<td>${u.employeeNo}</td>
-        		<td>${u.name}</td>
-        		<td><span class="tag ${u.role.toLowerCase()}">${u.role}</span></td>
-        		<td>${u.phone ?? ""}</td>
-        		<td>${u.email ?? ""}</td>
-        		<td>
-        			<button class="btn btn-edit" onclick="editUser('${u.employeeNo}')">수정</button>
-        	    	<button class="btn btn-delete" onclick="deleteUser('${u.employeeNo}')">삭제</button>
-        		</td>
+    let activeCnt = 0;
 
-            </tr>
-        `;
+    list.forEach(u => {
+        if (u.active) activeCnt++;
+
+        table.innerHTML += `
+        <tr>
+            <td>${u.employeeNo}</td>
+            <td>${u.name}</td>
+            <td><span class="tag ${u.role.toLowerCase()}">${u.role}</span></td>
+            <td>${u.phone ?? ""}</td>
+            <td>${u.email ?? ""}</td>
+            <td>${u.active ? "활성" : "비활성"}</td>
+            <td>
+                <button class="btn btn-edit"
+                    onclick="editUser('${u.employeeNo}')">수정</button>
+
+                <button class="btn btn-toggle"
+                    onclick="toggleActive('${u.employeeNo}', ${u.active})">
+                    ${u.active ? "비활성화" : "활성화"}
+                </button>
+
+                ${u.role === 'ADMIN' ? '' : `
+                <button class="btn btn-delete"
+                    onclick="deleteUser('${u.employeeNo}')">삭제</button>`}
+            </td>
+        </tr>`;
     });
 
     document.getElementById("totalCount").innerText = list.length + "명";
-    document.getElementById("activeCount").innerText =
-        list.length + "명";
+    document.getElementById("activeCount").innerText = activeCnt + "명";
+}
+
+async function toggleActive(employeeNo, current) {
+    await fetch(`/api/admin/users/${employeeNo}/status?active=${!current}`, {
+        method: "PATCH"
+    });
+    loadUsers();
 }
 
 async function createUser() {
-//     const body = {
-//         empId: empId.value,
-//         name: name.value,
-//         role: role.value,
-//         email: email.value,
-//         phone: phone.value
-//     };
-// 수정: 화면으로부터 입력값 못가져오는 오류 수정
-		const body = {
-		    empId: document.querySelector("#empId").value,
-		    name: document.querySelector("#name").value,
-		    role: document.querySelector("#role").value,
-		    email: document.querySelector("#email").value,
-		    phone: document.querySelector("#phone").value
-		};
 
+    const nameInput = document.getElementById("name");
 
-    await fetch("/api/admin/createUser", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(body)
-    });
+    if (!nameInput.value.trim()) {
+        alert("이름은 필수입니다.");
+        return;
+    }
 
-    alert("계정 생성 완료!");
+    const body = {
+        employeeNo: document.getElementById("empId").value,
+        name: nameInput.value.trim(),
+        role: document.getElementById("role").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value
+    };
+
+    if (editingEmployeeNo) {
+        await fetch(`/api/admin/users/${editingEmployeeNo}`, {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(body)
+        });
+        alert("계정 수정 완료");
+    } else {
+        await fetch("/api/admin/users", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(body)
+        });
+        alert("계정 생성 완료");
+    }
+
+    resetForm();
     loadUsers();
+}
+
+function editUser(employeeNo) {
+    const row = [...document.querySelectorAll("#userTable tr")]
+        .find(tr => tr.children[0].innerText === employeeNo);
+
+    if (!row) {
+        alert("수정할 계정을 찾지 못했습니다.");
+        return;
+    }
+
+    editingEmployeeNo = employeeNo;
+
+    const empIdInput = document.getElementById("empId");
+    empIdInput.value = employeeNo;
+    empIdInput.disabled = true;
+
+    document.getElementById("name").value = row.children[1].innerText.trim();
+    document.getElementById("role").value = row.children[2].innerText.trim();
+    document.getElementById("phone").value = row.children[3].innerText.trim();
+    document.getElementById("email").value = row.children[4].innerText.trim();
+
+    document.querySelector(".btn-create").innerText = "수정 완료";
 }
 
 async function deleteUser(employeeNo) {
-	 if (!confirm("정말 삭제할까요?")) return;
-    await fetch(`/api/admin/delete/${employeeNo}`, {
-        method: "DELETE"
-    });
+    if (!confirm("정말 삭제할까요?")) return;
+    await fetch(`/api/admin/users/${employeeNo}`, { method: "DELETE" });
     loadUsers();
 }
 
+function resetForm() {
+    editingEmployeeNo = null;
+    empId.disabled = false;
+    empId.value = "";
+    name.value = "";
+    role.value = "DOCTOR";
+    email.value = "";
+    phone.value = "";
+    document.querySelector(".btn-create").innerText = "생성";
+}
 
-/* ✅ DOM 로딩 이후 실행 */
 window.addEventListener("DOMContentLoaded", () => {
     loadUsers();
-
     const name = localStorage.getItem("name");
     if (name) {
         document.getElementById("admin-name").innerText = `${name} 님 환영합니다`;
     }
 });
-
-function editUser(employeeNo) {
-    alert(`✏️ ${employeeNo} 수정 기능은 추후 구현`);
-}
-
 </script>
 
 </body>
