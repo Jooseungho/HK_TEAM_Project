@@ -1,10 +1,198 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>문서 발행</title>
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    background: #f7f9fc;
+    font-family: "Pretendard", sans-serif;
+}
+
+.container {
+    display: flex;
+    padding: 30px;
+    gap: 24px;
+}
+
+.left-panel {
+    width: 280px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.doc-select-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.doc-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    font-size: 15px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.doc-btn.active {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.preview-panel {
+    flex: 1;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 14px;
+}
+
+.preview-title {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.preview-actions button {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn-print {
+    background: white;
+    border: 1px solid #d1d5db;
+}
+
+.btn-send {
+    background: #2563eb;
+    color: white;
+    border: none;
+}
+
+.doc-content-box {
+    margin-top: 20px;
+    padding: 30px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    min-height: 480px;
+    font-size: 15px;
+}
+
+textarea {
+    width: 100%;
+    min-height: 180px;
+    margin-top: 15px;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    resize: vertical;
+}
+
+.doc-footer {
+    margin-top: 15px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 13px;
+}
+</style>
 </head>
+
 <body>
+
+<div class="container">
+
+    <!-- 좌측 -->
+    <div class="left-panel">
+        <div class="doc-select-title">문서 종류 선택</div>
+
+        <button class="doc-btn active" onclick="selectDoc('PRESCRIPTION', this)">처방전</button>
+        <button class="doc-btn" onclick="selectDoc('CERTIFICATION', this)">진료확인서</button>
+        <button class="doc-btn" onclick="selectDoc('OPINION', this)">소견서</button>
+    </div>
+
+    <!-- 우측 -->
+    <div class="preview-panel">
+        <div class="preview-header">
+            <div class="preview-title" id="docTitle">처방전</div>
+            <div class="preview-actions">
+                <button class="btn-print" onclick="window.print()">출력</button>
+                <button class="btn-send" onclick="sendToNurse()">간호사에게 전송</button>
+            </div>
+        </div>
+
+        <div class="doc-content-box" id="docContent">
+            불러오는 중...
+        </div>
+
+        <div class="doc-footer">이 문서는 전자적으로 발행되었습니다.</div>
+    </div>
+</div>
+
+<script>
+function sendToNurse() {
+    const content = document.getElementById("doctorContent")?.value;
+
+    if (!content || content.trim() === "") {
+        alert("문서 내용을 입력해주세요.");
+        return;
+    }
+
+    // 1️⃣ 문서 생성
+    fetch(`/api/document/create?visitId=${visitId}&type=${currentType}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "text/plain",
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        },
+        body: content
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("문서 생성 실패");
+
+        // 2️⃣ document_request 상태 COMPLETED 처리
+        return fetch(`/api/document-request/complete`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
+            },
+            body: JSON.stringify({
+                visitId: visitId,
+                docType: currentType
+            })
+        });
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("요청 상태 변경 실패");
+        alert("문서가 간호사에게 전송되었습니다.");
+    })
+    .catch(err => {
+        console.error(err);
+        alert("문서 전송에 실패했습니다.");
+    });
+}
+</script>
+
 
 </body>
 </html>
