@@ -1,35 +1,49 @@
-// 🔹 Staff.java (엔티티)
 package com.his.system.staff;
-
-import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
+@Table(name = "STAFF")
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Staff {
 
-	@Id
-	@Column(name = "STAFF_ID")
-	private Long staffId; // 🔥 이게 핵심
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "STAFF_ID")
+    private Long staffId;
 
-	@Column(name = "EMPLOYEE_NO", unique = true)
-	private String employeeNo;
-	private String Phone;
-	private String email;
-	private String name;
-	private String password;
-	@Enumerated(EnumType.STRING)
-	
-	@Column(name = "ROLE")
-	private StaffRole role;
+    @Column(name = "EMPLOYEE_NO", length = 20, unique = true, nullable = false)
+    private String employeeNo;
 
-	private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
-	private int active;
+    @Column(nullable = false)
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StaffRole role;
+
+    private String phone;
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

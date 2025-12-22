@@ -43,7 +43,6 @@ public class DocumentController {
             @RequestParam DocumentType type,
             @RequestBody String content
     ) {
-        // ✅ JWT에서 의사 employeeNo 추출
         String employeeNo =
                 SecurityContextHolder.getContext()
                         .getAuthentication()

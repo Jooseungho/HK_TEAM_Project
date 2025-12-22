@@ -17,14 +17,16 @@ public class DocumentRequestService {
     private final StaffRepository staffRepository;
 
     // 🔥 요청 생성
-    public DocumentRequest createRequest(Long nurseId, DocumentType docType) {
+    // 로그인/컨트롤러에서는 employeeNo를 쓰고,
+    // Service에서 Staff 조회 후 staffId 기반으로 연관관계 설정
+    public DocumentRequest createRequest(String nurseEmployeeNo, DocumentType docType) {
 
-        Staff nurse = staffRepository.findById(nurseId)
-                .orElseThrow(() -> new RuntimeException("간호사 없음"));
+        Staff nurse = staffRepository.findByEmployeeNo(nurseEmployeeNo)
+                .orElseThrow(() -> new RuntimeException("간호사 없음: " + nurseEmployeeNo));
 
         DocumentRequest request = DocumentRequest.builder()
                 .docType(docType)
-                .requestedBy(nurse)
+                .requestedBy(nurse) // FK는 staffId로 자동 연결됨
                 .requestedAt(LocalDateTime.now())
                 .status(DocumentRequestStatus.REQUESTED)
                 .build();
@@ -50,11 +52,16 @@ public class DocumentRequestService {
         requestRepository.save(request);
     }
 
-    // 🔧 기존 유지 (혹시 다른 화면에서 사용 중이면)
-    public List<DocumentRequest> getReceivedDocuments(Long nurseId) {
-        return requestRepository.findByRequestedBy_IdAndStatus(
-            nurseId,
-            DocumentRequestStatus.SENT
+    // 🔧 간호사별 수신 문서
+    // Repository는 staffId 기준으로 조회
+    public List<DocumentRequest> getReceivedDocuments(String nurseEmployeeNo) {
+
+        Staff nurse = staffRepository.findByEmployeeNo(nurseEmployeeNo)
+                .orElseThrow(() -> new RuntimeException("간호사 없음: " + nurseEmployeeNo));
+
+        return requestRepository.findByRequestedBy_StaffIdAndStatus(
+                nurse.getStaffId(),
+                DocumentRequestStatus.SENT
         );
     }
 

@@ -14,5 +14,5 @@ private String employeeNo;
 private String name;
 private String phone;
 private String email;
-private String role;
+private StaffRole role;
 }

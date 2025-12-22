@@ -22,12 +22,13 @@ public interface DocumentRequestRepository
         DocumentRequestStatus status
     );
 
-    List<DocumentRequest> findByRequestedBy_Id(Long staffId);
+    List<DocumentRequest> findByRequestedBy_StaffId(Long staffId);
 
-    List<DocumentRequest> findByRequestedBy_IdAndStatus(
-        Long nurseId,
-        DocumentRequestStatus status
+    List<DocumentRequest> findByRequestedBy_StaffIdAndStatus(
+            Long staffId,
+            DocumentRequestStatus status
     );
+
 
     // 🔥 DTO 전용 (요청 대기 / 완료 공용)
     @Query("""

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>시스템 로그</title>
+
+    <!-- 🔐 관리자 접근 제어 -->
+    <script src="/js/access.js"></script>
+    <script src="/js/app.js"></script>
+
+    <style>
+        body {
+            font-family: Pretendard, sans-serif;
+            background: #f8f9fb;
+            margin: 0;
+        }
+
+        .header {
+            background: #fff;
+            padding: 20px 30px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .title { font-size: 20px; font-weight: 700; }
+
+        .summary-boxes {
+            display: flex;
+            gap: 20px;
+            padding: 20px 30px;
+        }
+        .box {
+            flex: 1;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .box-title { font-size: 15px; color: #555; }
+        .box-value { margin-top: 8px; font-size: 28px; font-weight: 700; }
+
+        .menu {
+            display: flex;
+            gap: 20px;
+            padding: 0 30px;
+            border-bottom: 1px solid #eee;
+            background: #fff;
+        }
+        .menu a {
+            padding: 15px 5px;
+            font-size: 16px;
+            color: #555;
+            text-decoration: none;
+        }
+        .menu a.active {
+            font-weight: 700;
+            border-bottom: 3px solid #6b50ff;
+            color: #6b50ff;
+        }
+
+        .content { padding: 25px 30px; }
+
+        .filter-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .filter-box input,
+        .filter-box select,
+        .filter-box button {
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        th {
+            background: #f3f4f6;
+            padding: 12px;
+            font-size: 14px;
+            text-align: center;
+        }
+        td {
+            padding: 12px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .pagination { margin-top: 20px; text-align: center; }
+        .pagination button {
+            padding: 6px 12px;
+            margin: 0 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===== 헤더 ===== -->
+<div class="header">
+    <div class="title">관리자 시스템</div>
+    <div style="display:flex; gap:15px; align-items:center;">
+        <div id="admin-name"></div>
+        <button class="btn" onclick="logout()">로그아웃</button>
+    </div>
+</div>
+
+<!-- ===== 요약 ===== -->
+<div class="summary-boxes">
+    <div class="box">
+        <div class="box-title">로그인</div>
+        <div class="box-value" id="loginCount">0회</div>
+    </div>
+    <div class="box">
+        <div class="box-title">로그아웃</div>
+        <div class="box-value" id="logoutCount">0회</div>
+    </div>
+    <div class="box">
+        <div class="box-title">EMR 조회</div>
+        <div class="box-value" id="emrViewCount">0건</div>
+    </div>
+</div>
+
+<!-- ===== 메뉴 ===== -->
+<div class="menu">
+    <a href="/html/admin_dashboard.html">계정 관리</a>
+    <a class="active">시스템 로그</a>
+    <a href="/html/inventory.html">재고 관리</a>
+</div>
+
+<!-- ===== 본문 ===== -->
+<div class="content">
+
+    <!-- 검색/필터 -->
+    <div class="filter-box">
+        <input type="text" id="employeeNo" placeholder="직원번호">
+        <select id="actionType">
+            <option value="">전체 작업</option>
+            <option value="LOGIN">로그인</option>
+            <option value="LOGOUT">로그아웃</option>
+            <option value="EMR_VIEW">EMR 조회</option>
+            <option value="PATIENT_REGISTER">환자 접수</option>
+            <option value="DOCUMENT_ISSUE">문서 발행</option>
+        </select>
+        <input type="datetime-local" id="from">
+        <input type="datetime-local" id="to">
+        <button onclick="loadLogs(0)">검색</button>
+    </div>
+
+    <!-- 로그 테이블 -->
+    <table>
+        <thead>
+        <tr>
+            <th>시간</th>
+            <th>사용자</th>
+            <th>작업</th>
+            <th>대상 ID</th>
+            <th>세부사항</th>
+        </tr>
+        </thead>
+        <tbody id="logTableBody"></tbody>
+    </table>
+
+    <div class="pagination" id="pagination"></div>
+</div>
+
+<script>
+/* 관리자 권한 + 이름 */
+checkAccess(["ADMIN"]);
+
+const name = localStorage.getItem("name");
+if (name) {
+    document.getElementById("admin-name").innerText = `${name} 님 환영합니다`;
+}
+
+/* ===== 로그 로딩 ===== */
+async function loadLogs(page) {
+    const employeeNo = document.getElementById("employeeNo").value;
+    const actionType = document.getElementById("actionType").value;
+    const from = document.getElementById("from").value;
+    const to = document.getElementById("to").value;
+
+    const params = new URLSearchParams({ page, size: 10 });
+    if (employeeNo) params.append("employeeNo", employeeNo);
+    if (actionType) params.append("actionType", actionType);
+    if (from) params.append("from", from);
+    if (to) params.append("to", to);
+
+    const res = await fetch(`/api/admin/system-logs?${params.toString()}`);
+    const data = await res.json();
+
+    const tbody = document.getElementById("logTableBody");
+    tbody.innerHTML = "";
+
+    const rows = data.content ?? data;
+
+    let loginCnt = 0, logoutCnt = 0, emrCnt = 0;
+
+    rows.forEach(log => {
+        if (log.actionType === "LOGIN") loginCnt++;
+        if (log.actionType === "LOGOUT") logoutCnt++;
+        if (log.actionType === "EMR_VIEW") emrCnt++;
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${log.createdAt}</td>
+                <td>${log.staffName} (${log.employeeNo})</td>
+                <td>${log.actionType}</td>
+                <td>${log.targetId ?? ""}</td>
+                <td>${log.description}</td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("loginCount").innerText = `${loginCnt}회`;
+    document.getElementById("logoutCount").innerText = `${logoutCnt}회`;
+    document.getElementById("emrViewCount").innerText = `${emrCnt}건`;
+
+    renderPagination(data);
+}
+
+/* 페이지네이션 */
+function renderPagination(data) {
+    const container = document.getElementById("pagination");
+    container.innerHTML = "";
+    if (!data.totalPages) return;
+
+    for (let i = 0; i < data.totalPages; i++) {
+        container.innerHTML += `<button onclick="loadLogs(${i})">${i + 1}</button>`;
+    }
+}
+
+window.addEventListener("DOMContentLoaded", () => loadLogs(0));
+</script>
+
+</body>
+</html>

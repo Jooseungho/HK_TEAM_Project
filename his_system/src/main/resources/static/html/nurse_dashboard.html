@@ -196,6 +196,11 @@ window.addEventListener("load", () => {
         document.getElementById("nurse-name").innerText = `${name} 님 환영합니다`;
     }
 });
+
+/* 🔥 전역 함수로 강제 등록 */
+window.openPatientRegister = function () {
+    loadTabContent("patient_register_form");
+};
 </script>
 
 </body>
