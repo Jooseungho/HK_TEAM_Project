@@ -6,11 +6,9 @@ import java.util.List;
 
 public interface VitalRepository extends JpaRepository<Vital, Long> {
 
-    // visit 1개 → vital 1개
-    Vital findByVisitId(Long visitId);
-
-    // visit 1개 → vital 여러 개 가능 (시간순)
+    // 방문별 Vital 목록 (최신순)
     List<Vital> findAllByVisitIdOrderByMeasuredAtDesc(Long visitId);
-    Vital findTopByVisitIdOrderByMeasuredAtDesc(Long visitId);
 
+    // 방문별 최신 Vital
+    Vital findTopByVisitIdOrderByMeasuredAtDesc(Long visitId);
 }

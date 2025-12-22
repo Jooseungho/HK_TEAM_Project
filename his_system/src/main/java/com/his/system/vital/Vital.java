@@ -1,18 +1,18 @@
 package com.his.system.vital;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.his.system.visit.Visit;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "VITAL")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Table(name = "VITAL")
 public class Vital {
 
     @Id
@@ -20,11 +20,12 @@ public class Vital {
     @Column(name = "VITAL_ID")
     private Long id;
 
-    // VISIT FK
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "VISIT_ID", nullable = false)
-    @JsonIgnoreProperties({"vital"})
     private Visit visit;
+
+    @Column(name = "NURSE_EMPLOYEE_NO", nullable = false)
+    private String nurseEmployeeNo;
 
     @Column(name = "BP_SYSTOLIC")
     private Integer bpSystolic;
@@ -44,9 +45,9 @@ public class Vital {
     @Column(name = "SPO2")
     private Integer spo2;
 
-    @Column(name = "MEMO", length = 255)
+    @Column(name = "MEMO")
     private String memo;
 
-    @Column(name = "MEASURED_AT", nullable = false)
+    @Column(name = "MEASURED_AT")
     private LocalDateTime measuredAt;
 }

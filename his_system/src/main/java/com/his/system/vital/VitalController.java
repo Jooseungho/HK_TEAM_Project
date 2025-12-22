@@ -12,24 +12,27 @@ public class VitalController {
 
     private final VitalService vitalService;
 
-    // 바이탈 입력
+    // 🟦 Vital 생성
     @PostMapping("/create")
-    public Vital createVital(@RequestParam Long visitId,
-                             @RequestParam String nurseId,
-                             @RequestBody Vital vitalData) {
-
-        return vitalService.createVital(visitId, nurseId, vitalData);
+    public Vital createVital(@RequestBody VitalCreateRequest request) {
+        return vitalService.createVital(request);
     }
 
-    // 내원별 바이탈 목록 조회
+    // 🟦 방문별 Vital 목록
     @GetMapping("/list/{visitId}")
     public List<Vital> getVitals(@PathVariable Long visitId) {
         return vitalService.getVitalsByVisit(visitId);
     }
 
-    // 바이탈 상세 조회
+    // 🟦 Vital 단건 조회
     @GetMapping("/{id}")
     public Vital getVital(@PathVariable Long id) {
         return vitalService.getVital(id);
+    }
+
+    // 🟦 최신 Vital
+    @GetMapping("/latest/{visitId}")
+    public Vital getLatestVital(@PathVariable Long visitId) {
+        return vitalService.getLatestByVisit(visitId);
     }
 }

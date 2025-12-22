@@ -26,7 +26,7 @@ public class PrescriptionService {
         Visit visit = visitRepository.findById(visitId)
                 .orElseThrow(() -> new RuntimeException("내원 정보 없음"));
 
-        Staff doctor = staffRepository.findById(Long.parseLong(employeeNo))
+        Staff doctor = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("의사 정보 없음"));
 
         // 1. Prescription 생성

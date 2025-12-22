@@ -38,7 +38,7 @@ public class DrugService {
     public Drug increaseStock(Long drugId, String employeeNo, int quantity, String memo) {
 
         Drug drug = getDrug(drugId);
-        Staff staff = staffRepository.findById(Long.parseLong(employeeNo))
+        Staff staff = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("직원 정보 없음"));
 
         drug.setStockQuantity(drug.getStockQuantity() + quantity);
@@ -49,7 +49,7 @@ public class DrugService {
         DrugLog log = DrugLog.builder()
                 .drug(drug)
                 .staff(staff)
-                .changeType(DrugChangeType.IN)
+                .changeType(ChangeType.IN)
                 .quantity(quantity)
                 .memo(memo)
                 .createdAt(LocalDateTime.now())
@@ -64,7 +64,7 @@ public class DrugService {
     public Drug decreaseStock(Long drugId, String employeeNo, int quantity, String memo) {
 
         Drug drug = getDrug(drugId);
-        Staff staff = staffRepository.findById(Long.parseLong(employeeNo))
+        Staff staff = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("직원 정보 없음"));
 
         if (drug.getStockQuantity() < quantity) {
@@ -79,7 +79,7 @@ public class DrugService {
         DrugLog log = DrugLog.builder()
                 .drug(drug)
                 .staff(staff)
-                .changeType(DrugChangeType.OUT)
+                .changeType(ChangeType.OUT)
                 .quantity(quantity)
                 .memo(memo)
                 .createdAt(LocalDateTime.now())

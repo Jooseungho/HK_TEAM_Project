@@ -1,6 +1,6 @@
 package com.his.system.drug;
 
-public enum DrugChangeType {
+public enum ChangeType {
     IN,
     OUT
 }

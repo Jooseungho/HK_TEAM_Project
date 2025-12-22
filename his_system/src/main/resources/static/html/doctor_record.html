@@ -1,39 +1,58 @@
 <h2 style="font-size:26px; font-weight:700; margin-bottom:15px;">진료 기록</h2>
 
-<div id="patient-info" style="margin-bottom:25px;"></div>
+<div style="display:flex; gap:25px; align-items:flex-start;">
 
-<!-- SOAP 입력 영역 -->
-<div style="background:white; padding:20px; border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.06);">
+    <!-- ⬅️ 현재 진료 -->
+    <div style="flex:3;">
 
-    <label>Subjective (환자 호소)</label>
-    <textarea id="s" style="width:100%; height:80px; margin-bottom:15px;"></textarea>
+        <div id="patient-info" style="margin-bottom:25px;"></div>
 
-    <label>Objective (의사 관찰)</label>
-    <textarea id="o" style="width:100%; height:80px; margin-bottom:15px;"></textarea>
+        <div style="background:white; padding:20px; border-radius:12px;
+                    box-shadow:0 3px 10px rgba(0,0,0,0.06);">
 
-    <label>Assessment (의사 판단)</label>
-    <textarea id="a" style="width:100%; height:80px; margin-bottom:15px;"></textarea>
+            <label>Subjective</label>
+            <textarea id="s" style="width:100%; height:70px; margin-bottom:12px;"></textarea>
 
-    <label>Plan (치료 계획)</label>
-    <textarea id="p" style="width:100%; height:80px; margin-bottom:25px;"></textarea>
+            <label>Objective</label>
+            <textarea id="o" style="width:100%; height:70px; margin-bottom:12px;"></textarea>
 
-    <label>진단명</label>
-    <input id="diagnosis" type="text" style="width:100%; padding:10px; margin-bottom:15px;">
+            <label>Assessment</label>
+            <textarea id="a" style="width:100%; height:70px; margin-bottom:12px;"></textarea>
 
-    <label>ICD-10 코드</label>
-    <input id="icd" type="text" style="width:100%; padding:10px; margin-bottom:25px;">
+            <label>Plan</label>
+            <textarea id="p" style="width:100%; height:70px; margin-bottom:18px;"></textarea>
 
-    <button onclick="saveRecord()"
-        style="width:100%; padding:15px; background:#2563eb; color:white; border:none;
-               border-radius:12px; font-size:18px; cursor:pointer;">
-        진료 완료
-    </button>
+            <label>진단명</label>
+            <input id="diagnosis" style="width:100%; padding:10px; margin-bottom:10px;">
+
+            <label>ICD-10 코드</label>
+            <input id="icd" style="width:100%; padding:10px; margin-bottom:20px;">
+
+            <button onclick="saveRecord()"
+                style="width:100%; padding:14px;
+                       background:#2563eb; color:white;
+                       border:none; border-radius:12px;
+                       font-size:16px; cursor:pointer;">
+                진료 완료
+            </button>
+        </div>
+    </div>
+
+    <!-- ➡️ 과거 기록 -->
+    <div style="flex:1;">
+        <div style="background:white; padding:15px; border-radius:12px;
+                    box-shadow:0 3px 10px rgba(0,0,0,0.06);
+                    max-height:80vh; overflow-y:auto;">
+            <h3 style="margin-bottom:12px;">📚 과거 진료 기록</h3>
+            <div id="past-record-list"></div>
+        </div>
+    </div>
 </div>
 
 <script>
-// -----------------------------------------------------
-// 🔵 환자 정보 + 최신 vital + 과거 진료 로드
-// -----------------------------------------------------
+/* =========================
+   현재 환자 정보
+========================= */
 async function loadRecordPage() {
 
     if (!visitId) {
@@ -41,64 +60,94 @@ async function loadRecordPage() {
         return;
     }
 
-    const res = await fetch(`/api/visit/${visitId}/detail`);
+    const res = await authFetch(`/api/visit/${visitId}/detail`);
     const data = await res.json();
 
-    const visit = data.visit;
     const patient = data.patient;
     const vital = data.vital ?? {};
 
     document.getElementById("patient-info").innerHTML = `
-        <div style="background:white; padding:20px; border-radius:12px;
-                    box-shadow:0 3px 10px rgba(0,0,0,0.06); margin-bottom:20px;">
-            <h3 style="margin-bottom:10px; font-size:20px;">${patient.name}</h3>
+        <div style="background:white; padding:18px; border-radius:12px;
+                    box-shadow:0 3px 10px rgba(0,0,0,0.06);">
+            <h3 style="font-size:20px;">${patient.name}</h3>
             <div>차트번호: ${patient.chartNo}</div>
-            <div>성별: ${patient.gender} / 생년월일: ${patient.birthdate}</div>
-            <div style="margin-top:10px; font-weight:700;">Vital Signs</div>
+            <div>성별: ${patient.gender} / ${patient.birthdate}</div>
+            <hr style="margin:10px 0;">
             <div>혈압: ${vital.bpSystolic ?? '-'} / ${vital.bpDiastolic ?? '-'}</div>
             <div>맥박: ${vital.heartRate ?? '-'} bpm</div>
             <div>체온: ${vital.temperature ?? '-'} ℃</div>
-            <div style="margin-top:10px;">증상: ${vital.memo ?? '-'}</div>
+            <div>증상: ${vital.memo ?? '-'}</div>
         </div>
     `;
+
+    loadPastRecords(patient.id);
 }
 
+/* =========================
+   과거 기록
+========================= */
+async function loadPastRecords(patientId) {
 
+    const res = await authFetch(`/api/record/patient/${patientId}`);
+    const list = await res.json();
 
-// -----------------------------------------------------
-// 🔵 SOAP + 진단 저장 후 visit 상태 DONE 처리
-// -----------------------------------------------------
+    const area = document.getElementById("past-record-list");
+    area.innerHTML = "";
+
+    if (list.length === 0) {
+        area.innerHTML = `<div style="color:#6b7280;">과거 기록 없음</div>`;
+        return;
+    }
+
+    list.forEach(r => {
+        area.innerHTML += `
+            <div style="border-bottom:1px solid #e5e7eb; padding:10px 0;">
+                <div style="font-size:13px; color:#6b7280;">
+                    ${r.createdAt?.substring(0,10)}
+                </div>
+                <div style="font-weight:700; color:#2563eb;">
+                    ${r.diagnosisName ?? "-"}
+                </div>
+                <div style="font-size:12px; color:#374151;">
+                    ${r.assessment ?? ""}
+                </div>
+            </div>
+        `;
+    });
+}
+
+/* =========================
+   진료 완료
+========================= */
 async function saveRecord() {
 
     const body = {
         visitId: visitId,
-        subjective: document.getElementById("s").value,
-        objective: document.getElementById("o").value,
-        assessment: document.getElementById("a").value,
-        plan: document.getElementById("p").value,
-        diagnosis: document.getElementById("diagnosis").value,
-        icdCode: document.getElementById("icd").value
+        subjective: s.value,
+        objective: o.value,
+        assessment: a.value,
+        plan: p.value,
+        diagnosisName: diagnosis.value,
+        icd10Code: icd.value
     };
 
-    // 1) SOAP 저장
-    await fetch("/api/record/save", {
+    const res = await authFetch("/api/record/save", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
         body: JSON.stringify(body)
     });
 
-    // 2) Visit → 완료 처리
-    await fetch(`/api/visit/${visitId}/complete`, {
+    if (!res.ok) {
+        alert("진료 기록 저장 실패");
+        return;
+    }
+
+    await authFetch(`/api/visit/${visitId}/complete`, {
         method: "POST"
     });
 
-    alert("진료가 완료되었습니다.");
-
-    // 다시 대기열로 이동
+    alert("진료 완료");
     location.href = "/html/doctor_dashboard.html";
 }
 
-
-// 실행
 loadRecordPage();
 </script>

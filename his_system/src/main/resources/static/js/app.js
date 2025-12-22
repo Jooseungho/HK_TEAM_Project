@@ -2,18 +2,7 @@ function getToken() {
     return localStorage.getItem("token");
 }
 
-async function logout() {
-    try {
-        await fetch("/api/admin/system-logs/logout-log", {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + getToken()
-            }
-        });
-    } catch (e) {
-        // 로그 실패해도 로그아웃은 진행
-    }
-
+function logout() {
     localStorage.removeItem("token");
     location.href = "/html/login.html";
 }
@@ -27,5 +16,22 @@ async function apiGet(url) {
         }
     }).then(res => res.json());
 }
-
 window.logout = logout;
+
+async function authFetch(url, options = {}) {
+    const token = localStorage.getItem("token"); // 🔥 핵심
+
+    if (!token) {
+        alert("로그인 토큰 없음");
+        throw new Error("No token");
+    }
+
+    options.headers = {
+        ...(options.headers || {}),
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+    };
+
+    return fetch(url, options);
+}
+

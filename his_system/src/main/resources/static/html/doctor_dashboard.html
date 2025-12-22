@@ -4,56 +4,134 @@
     <meta charset="UTF-8">
     <title>의사 진료 시스템</title>
 
-    <!-- 🔥 추가: 접근 권한 / 이름 표시 / 로그아웃 기능 -->
+    <!-- 접근 권한 / 공통 함수 -->
     <script src="/js/access.js"></script>
-	<script src="/js/app.js"></script>
-    
+    <script src="/js/app.js"></script>
 
     <style>
-        body { font-family: 'Pretendard', sans-serif; margin: 0; background: #f9fafb; }
-        header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 18px 30px; background: white; border-bottom: 1px solid #e5e7eb;
-            font-size: 18px; font-weight: 600;
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            background: #f9fafb;
         }
-        .cards { display:flex; gap:15px; padding:20px 30px; }
-        .card { flex:1; background:#eef6ff; border-radius:12px; padding:20px; font-size:16px; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 30px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* 🔥 오른쪽 영역 (UI만 추가) */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* 🔥 사용자 이름 영역 */
+        #doctor-name {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: right;
+            line-height: 1.3;
+        }
+
+        .user-name {
+            font-size: 16px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .welcome-text {
+            font-size: 14px;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        /* 🔥 로그아웃 버튼 색 통일 */
+        .logout-btn {
+            padding: 10px 18px;
+            border-radius: 12px;
+            border: none;
+            background: #8ea6ff;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: #5d7bff;
+        }
+
+        .cards {
+            display:flex;
+            gap:15px;
+            padding:20px 30px;
+        }
+
+        .card {
+            flex:1;
+            background:#eef6ff;
+            border-radius:12px;
+            padding:20px;
+            font-size:16px;
+        }
+
         .card.yellow { background:#fff8dc; }
         .card.green { background:#eafff1; }
         .card.blue { background:#e6f0ff; }
+
         .card-title { color:#555; margin-bottom:7px; }
         .card-value { font-size:22px; font-weight:700; }
 
-        .tabs { display:flex; padding:10px 30px 0; gap:35px; background:white; border-bottom:1px solid #d1d5db; font-size:17px; }
-        .tab { padding:10px 4px 14px; cursor:pointer; color:#4b5563; }
-        .tab.active { font-weight:700; color:#2563eb; border-bottom:3px solid #2563eb; }
+        .tabs {
+            display:flex;
+            padding:10px 30px 0;
+            gap:35px;
+            background:white;
+            border-bottom:1px solid #d1d5db;
+            font-size:17px;
+        }
 
-        #content-area { padding:25px 30px; }
+        .tab {
+            padding:10px 4px 14px;
+            cursor:pointer;
+            color:#4b5563;
+        }
+
+        .tab.active {
+            font-weight:700;
+            color:#2563eb;
+            border-bottom:3px solid #2563eb;
+        }
+
+        #content-area {
+            padding:25px 30px;
+        }
     </style>
 </head>
 
 <body>
 
 <header>
-    <div style="display:flex; align-items:center; gap:10px;">
-        <img src="/static/icon_doctor.svg" width="30">
-        의사 진료 시스템
+    <div>의사 진료 시스템</div>
+
+    <div class="header-right">
+        <div id="doctor-name" class="user-info"></div>
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
     </div>
-
-    <!-- 🔥 기존 doctor-name DIV → 변경하지 않고 내부 값만 JS로 교체 -->
-    <div id="doctor-name"></div>
-
-    <!-- 🔥 추가: 로그아웃 버튼 -->
-    <button onclick="logout()" 
-            style="margin-left:20px; padding:8px 15px; cursor:pointer;">
-        로그아웃
-    </button>
 </header>
 
-<!-- 🔥 추가: 페이지 로딩 직후 접근 권한 체크 -->
+
 <script>
     checkAccess(["DOCTOR"]);
-    // 이유: DOCTOR 역할만 접근 가능하도록 보호
 </script>
 
 <!-- 상단 카드 -->
@@ -72,7 +150,7 @@
     </div>
 </div>
 
-<!-- 탭 메뉴 -->
+<!-- 탭 -->
 <div class="tabs">
     <div class="tab active" data-tab="doctor_waiting">환자 대기열</div>
     <div class="tab" data-tab="doctor_record">진료 기록</div>
@@ -80,66 +158,56 @@
     <div class="tab" data-tab="doctor_document">문서 발행</div>
 </div>
 
-<!-- 콘텐츠 영역 -->
 <div id="content-area"></div>
 
 <script>
 /* -------------------------------
-    상단 카드 카운트 로드
+   상단 카드 카운트
 ------------------------------- */
 async function loadDashboardCounts() {
-	const res = await fetch("/api/visit/waiting_list");
+    const res = await fetch("/api/visit/status_counts");
     if (!res.ok) return;
 
-    const list = await res.json();
-
-    const waiting = list.length;
-    const inTreatment = 0;
-    const done = 0;
-
-    document.getElementById("waiting-count").innerText = `${list.length}명`;
-    document.getElementById("on-treatment-count").innerText = `0명`;
-    document.getElementById("done-count").innerText = `0명`;
+    const data = await res.json();
+    document.getElementById("waiting-count").innerText = `${data.WAITING ?? 0}명`;
+    document.getElementById("on-treatment-count").innerText = `${data.IN_TREATMENT ?? 0}명`;
+    document.getElementById("done-count").innerText = `${data.DONE ?? 0}명`;
 }
 
 /* ------------------------------------
-HTML 로드 + 내부 script 실행 (중복 제거)
+   탭 콘텐츠 로딩 (원본 로직 유지)
 ------------------------------------- */
 function loadTabContent(file, extraParam = "") {
+    fetch(`/html/${file}.html`)
+        .then(res => res.text())
+        .then(html => {
+            const area = document.getElementById("content-area");
+            area.innerHTML = html;
 
- fetch(`/html/${file}.html`)
-     .then(res => res.text())
-     .then(html => {
-         const area = document.getElementById("content-area");
-         area.innerHTML = html;
+            document.querySelectorAll("script[data-dynamic='yes']").forEach(s => s.remove());
 
-         document.querySelectorAll("script[data-dynamic='yes']")
-             .forEach(s => s.remove());
+            const scripts = area.querySelectorAll("script");
+            scripts.forEach(oldScript => {
+                let code = oldScript.innerHTML;
 
-         const scripts = area.querySelectorAll("script");
+                if (
+                    (file === "doctor_record" || file === "doctor_prescription") &&
+                    extraParam.startsWith("?visitId=")
+                ) {
+                    const visitId = extraParam.replace("?visitId=", "");
+                    code = `window.visitId=${visitId};\n` + code;
+                }
 
-         scripts.forEach(oldScript => {
-             let code = oldScript.innerHTML;
-
-             if (
-                 (file === "doctor_record" || file === "doctor_prescription") &&
-                 extraParam.startsWith("?visitId=")
-             ) {
-                 const visitId = extraParam.replace("?visitId=", "");
-                 code = `window.visitId=${visitId};\n` + code;
-             }
-
-             const newScript = document.createElement("script");
-             newScript.setAttribute("data-dynamic", "yes");
-             newScript.text = code;
-
-             document.body.appendChild(newScript);
-         });
-     });
+                const newScript = document.createElement("script");
+                newScript.setAttribute("data-dynamic", "yes");
+                newScript.text = code;
+                document.body.appendChild(newScript);
+            });
+        });
 }
 
 /* -------------------------------
-    탭 클릭 → 화면 교체
+   탭 클릭
 ------------------------------- */
 document.querySelectorAll(".tab").forEach(tab => {
     tab.addEventListener("click", () => {
@@ -161,15 +229,18 @@ document.querySelectorAll(".tab").forEach(tab => {
     });
 });
 
-/* ------------------------------------------------
-   페이지 로딩 시
------------------------------------------------- */
+/* -------------------------------
+   초기 로딩
+------------------------------- */
 window.addEventListener("load", () => {
     loadDashboardCounts();
 
     const name = localStorage.getItem("name");
     if (name) {
-        document.getElementById("doctor-name").innerText = `${name} 님 환영합니다`;  // 🔥 추가
+        document.getElementById("doctor-name").innerHTML = `
+            <span class="user-name">${name} 님</span>
+            <span class="welcome-text">환영합니다</span>
+        `;
     }
 
     const visitId = sessionStorage.getItem("currentVisitId");

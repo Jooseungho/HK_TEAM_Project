@@ -18,30 +18,25 @@ public class MedicalRecordService {
     private final VisitRepository visitRepository;
     private final StaffRepository staffRepository;
 
-    // SOAP 저장
-    public MedicalRecord createRecord(Long visitId, String employeeNo, MedicalRecord data) {
-
-        Visit visit = visitRepository.findById(visitId)
+    public MedicalRecord createRecord(
+            MedicalRecordRequest req,
+            String employeeNo
+    ) {
+        Visit visit = visitRepository.findById(req.getVisitId())
                 .orElseThrow(() -> new RuntimeException("visit 없음"));
 
-        Staff doctor = staffRepository.findById(Long.parseLong(employeeNo))
+        Staff doctor = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("doctor 없음"));
 
-        MedicalRecord record = MedicalRecord.builder()
-                .visit(visit)
-                .doctor(doctor)
-                .subjective(data.getSubjective())
-                .objective(data.getObjective())
-                .assessment(data.getAssessment())
-                .plan(data.getPlan())
-                .diagnosisName(data.getDiagnosisName())
-                .icd10Code(data.getIcd10Code())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        MedicalRecord record = req.toEntity();
+        record.setVisit(visit);
+        record.setDoctor(doctor);
+        record.setCreatedAt(LocalDateTime.now());
+        record.setUpdatedAt(LocalDateTime.now());
 
         return medicalRecordRepository.save(record);
     }
+
 
     // 방문별 조회
     public List<MedicalRecord> getRecordsByVisit(Long visitId) {

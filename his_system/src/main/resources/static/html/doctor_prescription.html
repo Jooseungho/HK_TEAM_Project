@@ -67,39 +67,39 @@
 <!-- -------------------------------
       주사 / 처치 입력 폼
 -------------------------------- -->
-<div
-	style="background: white; padding: 25px; border-radius: 12px; margin-bottom: 30px;">
-	<h3 style="margin-bottom: 20px;">💉 주사 및 처치</h3>
+<!-- 💉 주사 / 처치 입력 폼 -->
+<div style="background:white; padding:25px; border-radius:12px; margin-bottom:30px;">
+    <h3>💉 주사 및 처치</h3>
 
-	<div class="form-row">
-		<div style="flex: 1;">
-			<label>처치 유형</label> <select id="treatType"
-				style="width: 100%; padding: 10px;">
-				<option value="INJECTION">주사</option>
-				<option value="PROCEDURE">처치</option>
-			</select>
-		</div>
+    <div class="form-row">
+        <div style="flex:1;">
+            <label>처치명</label>
+            <select id="treatName" style="width:100%; padding:10px;">
+                <option value="">선택하세요</option>
+                <option value="X-ray">X-ray</option>
+                <option value="비타민 주사">비타민 주사</option>
+            </select>
+        </div>
+    </div>
 
-		<div style="flex: 1;">
-			<label>처치명</label> <input id="treatName"
-				placeholder="예: X-ray 촬영, 비타민 주사"
-				style="width: 100%; padding: 10px;">
-		</div>
-	</div>
+    <div style="margin-top:15px;">
+        <label>특이사항</label>
+        <textarea id="treatMemo" rows="2"
+                  style="width:100%; padding:10px;"></textarea>
+    </div>
 
-	<div style="margin-top: 15px;">
-		<label>특이사항</label>
-		<textarea id="treatMemo" rows="2" style="width: 100%; padding: 10px;"></textarea>
-	</div>
+    <button onclick="addTreatment()"
+        style="margin-top:15px; padding:12px; width:100%;
+               background:#16a34a; color:white; border:none; border-radius:8px;">
+        + 처치 추가
+    </button>
 
-	<button onclick="addTreatment()"
-		style="margin-top: 15px; padding: 12px; width: 100%; background: #16a34a; color: white; border: none; border-radius: 8px; cursor: pointer;">
-		+ 처치 추가</button>
-
-	<div id="treatment-list"
-		style="margin-top: 15px; background: #f8fafc; padding: 15px; border-radius: 8px;">
-		처치 내역이 없습니다.</div>
+    <div id="treatment-list"
+         style="margin-top:15px; background:#f8fafc; padding:15px; border-radius:8px;">
+        처치 내역이 없습니다.
+    </div>
 </div>
+
 
 <!-- -------------------------------
         전체 저장 버튼
@@ -206,15 +206,19 @@ function deleteDrug(idx) {
 /* ---------------------------
    💉 처치 추가 / 렌더링
 --------------------------- */
+
 function addTreatment() {
-    const type = document.getElementById("treatType").value;
-    const name = document.getElementById("treatName").value.trim();
+    const name = document.getElementById("treatName").value;
     const memo = document.getElementById("treatMemo").value.trim();
 
     if (!name) {
-        alert("처치명을 입력하세요.");
+        alert("처치를 선택하세요.");
         return;
     }
+
+    // ⭐ 처치명 기반 자동 타입 결정
+    let type = "PROCEDURE";
+    if (name.includes("주사")) type = "INJECTION";
 
     const item = { type, name, memo };
     treatmentList.push(item);
@@ -233,12 +237,11 @@ function renderTreatmentList() {
     treatmentList.forEach((t, idx) => {
         area.innerHTML += `
             <div style="padding:10px; background:white; border-radius:8px; margin-bottom:10px;">
-                <strong>${t.type}</strong> - ${t.name}<br>
+                <strong>${t.name}</strong> (${t.type})<br>
                 <span style="color:#6b7280;">${t.memo || "-"}</span>
                 <button onclick="deleteTreatment(${idx})"
-                    style="float:right; margin-top:-25px; padding:4px 10px;
-                           background:#ef4444; color:white; border:none;
-                           border-radius:6px; cursor:pointer;">
+                    style="float:right; background:#ef4444; color:white;
+                           border:none; border-radius:6px; padding:4px 10px;">
                     삭제
                 </button>
             </div>
@@ -250,6 +253,7 @@ function deleteTreatment(idx) {
     treatmentList.splice(idx, 1);
     renderTreatmentList();
 }
+
 
 /* ---------------------------
    🔥 전체 저장 (doctorId 자동 반영)
@@ -271,11 +275,19 @@ async function saveAll() {
         treatments: treatmentList
     };
 
-    const res = await fetch(`/api/prescription/create?visitId=${visitId}&doctorId=${doctorId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    });
+
+    const res = await fetch(
+    	    `/api/prescription/create?visitId=${visitId}`,
+    	    {
+    	        method: "POST",
+    	        headers: {
+    	            "Content-Type": "application/json",
+    	            "Authorization": "Bearer " + localStorage.getItem("token")
+    	        },
+    	        body: JSON.stringify(body)
+    	    }
+    	);
+
 
     if (!res.ok) {
         const msg = await res.text();
@@ -283,8 +295,17 @@ async function saveAll() {
         return;
     }
 
-    alert("처방이 정상적으로 저장되었습니다.");
+    alert("처방이 저장되고 간호사에게 전달되었습니다.");
+
+    // 🔥 visit 컨텍스트 유지
+    sessionStorage.setItem("currentVisitId", visitId);
+
+    // 🔥 문서 발행 탭으로 이동
+    document
+        .querySelector('.tab[data-tab="doctor_document"]')
+        ?.click();
 }
+
 
 /* 처음 들어왔을 때 환자 정보 로딩 */
 loadPatientInfo();

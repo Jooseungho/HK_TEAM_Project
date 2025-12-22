@@ -1,6 +1,8 @@
 package com.his.system.record;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,14 +32,16 @@ public class MedicalRecordController {
     }
 
 
-    // SOAP 기록 생성
-    @PostMapping("/create")
-    public MedicalRecord createRecord(
-            @RequestParam Long visitId,
-            @RequestParam String employeeNo,
-            @RequestBody MedicalRecord data
+    @PostMapping("/save")
+    public MedicalRecord saveRecord(
+            @RequestBody MedicalRecordRequest req
     ) {
-        return medicalRecordService.createRecord(visitId, employeeNo, data);
+        String employeeNo = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        return medicalRecordService.createRecord(req, employeeNo);
     }
 
     // 기록 상세 조회

@@ -4,26 +4,18 @@
     <meta charset="UTF-8">
     <title>시스템 로그</title>
 
+    <!-- ✅ 공통 스타일 -->
+    <link rel="stylesheet" href="/css/style.css">
+
     <!-- 🔐 관리자 접근 제어 -->
     <script src="/js/access.js"></script>
     <script src="/js/app.js"></script>
 
+    <!-- 로그 페이지 전용 스타일 -->
     <style>
         body {
-            font-family: Pretendard, sans-serif;
             background: #f8f9fb;
-            margin: 0;
         }
-
-        .header {
-            background: #fff;
-            padding: 20px 30px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .title { font-size: 20px; font-weight: 700; }
 
         .summary-boxes {
             display: flex;
@@ -94,7 +86,10 @@
             text-align: center;
         }
 
-        .pagination { margin-top: 20px; text-align: center; }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
         .pagination button {
             padding: 6px 12px;
             margin: 0 4px;
@@ -105,58 +100,55 @@
 
 <body>
 
-<!-- ===== 헤더 ===== -->
-<div class="header">
-    <div class="title">관리자 시스템</div>
-    <div style="display:flex; gap:15px; align-items:center;">
-        <div id="admin-name"></div>
-        <button class="btn" onclick="logout()">로그아웃</button>
-    </div>
-</div>
+<script>
+    checkAccess(["ADMIN"]);
+</script>
 
-<!-- ===== 요약 ===== -->
+<!-- ✅ 공통 관리자 헤더 -->
+<header>
+    <div>관리자 시스템</div>
+
+    <div class="header-right">
+        <div id="admin-name" class="user-info"></div>
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+</header>
+
+<!-- 요약 -->
 <div class="summary-boxes">
-    <div class="box">
-        <div class="box-title">로그인</div>
-        <div class="box-value" id="loginCount">0회</div>
-    </div>
-    <div class="box">
-        <div class="box-title">로그아웃</div>
-        <div class="box-value" id="logoutCount">0회</div>
-    </div>
-    <div class="box">
-        <div class="box-title">EMR 조회</div>
-        <div class="box-value" id="emrViewCount">0건</div>
-    </div>
+    <div class="box log-card login">
+    <div class="box-title">로그인</div>
+    <div class="box-value" id="loginCount">0회</div>
 </div>
 
-<!-- ===== 메뉴 ===== -->
+<div class="box log-card logout">
+    <div class="box-title">로그아웃</div>
+    <div class="box-value" id="logoutCount">0회</div>
+</div>
+
+</div>
+
+<!-- 메뉴 -->
 <div class="menu">
     <a href="/html/admin_dashboard.html">계정 관리</a>
     <a class="active">시스템 로그</a>
-    <a href="/html/inventory.html">재고 관리</a>
 </div>
 
-<!-- ===== 본문 ===== -->
+<!-- 본문 -->
 <div class="content">
 
-    <!-- 검색/필터 -->
     <div class="filter-box">
         <input type="text" id="employeeNo" placeholder="직원번호">
         <select id="actionType">
             <option value="">전체 작업</option>
             <option value="LOGIN">로그인</option>
             <option value="LOGOUT">로그아웃</option>
-            <option value="EMR_VIEW">EMR 조회</option>
-            <option value="PATIENT_REGISTER">환자 접수</option>
-            <option value="DOCUMENT_ISSUE">문서 발행</option>
         </select>
         <input type="datetime-local" id="from">
         <input type="datetime-local" id="to">
-        <button onclick="loadLogs(0)">검색</button>
+        <button class="action-btn" onclick="loadLogs(0)">검색</button>
     </div>
 
-    <!-- 로그 테이블 -->
     <table>
         <thead>
         <tr>
@@ -174,12 +166,12 @@
 </div>
 
 <script>
-/* 관리자 권한 + 이름 */
-checkAccess(["ADMIN"]);
-
 const name = localStorage.getItem("name");
 if (name) {
-    document.getElementById("admin-name").innerText = `${name} 님 환영합니다`;
+    document.getElementById("admin-name").innerHTML = `
+        <span class="user-name">${name} 님</span>
+        <span class="welcome-text">환영합니다</span>
+    `;
 }
 
 /* ===== 로그 로딩 ===== */
@@ -203,12 +195,11 @@ async function loadLogs(page) {
 
     const rows = data.content ?? data;
 
-    let loginCnt = 0, logoutCnt = 0, emrCnt = 0;
+    let loginCnt = 0, logoutCnt = 0;
 
     rows.forEach(log => {
         if (log.actionType === "LOGIN") loginCnt++;
         if (log.actionType === "LOGOUT") logoutCnt++;
-        if (log.actionType === "EMR_VIEW") emrCnt++;
 
         tbody.innerHTML += `
             <tr>
@@ -223,12 +214,10 @@ async function loadLogs(page) {
 
     document.getElementById("loginCount").innerText = `${loginCnt}회`;
     document.getElementById("logoutCount").innerText = `${logoutCnt}회`;
-    document.getElementById("emrViewCount").innerText = `${emrCnt}건`;
 
     renderPagination(data);
 }
 
-/* 페이지네이션 */
 function renderPagination(data) {
     const container = document.getElementById("pagination");
     container.innerHTML = "";

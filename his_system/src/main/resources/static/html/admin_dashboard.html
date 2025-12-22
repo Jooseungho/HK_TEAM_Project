@@ -4,31 +4,25 @@
     <meta charset="UTF-8">
     <title>관리자 시스템</title>
 
+    <!-- ✅ 공통 스타일 (필수) -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- 접근 권한 / 공통 함수 -->
     <script src="/js/access.js"></script>
     <script src="/js/app.js"></script>
 
+    <!-- 관리자 전용 스타일 -->
     <style>
         body {
-            font-family: Pretendard, sans-serif;
             background: #f8f9fb;
-            margin: 0;
         }
-
-        .header {
-            background: white;
-            padding: 20px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-        }
-        .header .title { font-size: 20px; font-weight: 700; }
 
         .summary-boxes {
             display: flex;
             gap: 20px;
             padding: 20px 30px;
         }
+
         .box {
             flex: 1;
             background: #fff;
@@ -36,29 +30,48 @@
             border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .box-title { font-size: 15px; color: #555; }
-        .box-value { margin-top: 8px; font-size: 28px; font-weight: 700; }
 
+        .box-title {
+            font-size: 15px;
+            color: #555;
+        }
+
+        .box-value {
+            margin-top: 8px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        /* 메뉴 */
         .menu {
             display: flex;
             gap: 20px;
             padding: 0 30px;
             border-bottom: 1px solid #eee;
+            background: white;
         }
+
         .menu a {
             padding: 15px 5px;
             font-size: 16px;
             color: #555;
             text-decoration: none;
         }
+
         .menu a.active {
             font-weight: 700;
             border-bottom: 3px solid #6b50ff;
             color: #6b50ff;
         }
 
-        .content { padding: 25px 30px; }
-        .layout { display: flex; gap: 30px; }
+        .content {
+            padding: 25px 30px;
+        }
+
+        .layout {
+            display: flex;
+            gap: 30px;
+        }
 
         table {
             width: 100%;
@@ -66,12 +79,15 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow: hidden;
         }
+
         th {
             background: #f3f4f6;
             padding: 12px;
             font-size: 14px;
         }
+
         td {
             padding: 12px;
             border-top: 1px solid #eee;
@@ -92,18 +108,10 @@
             color: white;
             font-weight: 600;
         }
-        .tag.doctor { background: #4f46e5; }
-        .tag.nurse { background: #16a34a; }
-        .tag.admin { background: #9333ea; }
 
-        .status.active {
-            color: #16a34a;
-            font-weight: 700;
-        }
-        .status.inactive {
-            color: #ef4444;
-            font-weight: 700;
-        }
+        .tag.doctor { background: #4f46e5; }
+        .tag.nurse  { background: #16a34a; }
+        .tag.admin  { background: #9333ea; }
 
         .btn {
             padding: 7px 12px;
@@ -111,9 +119,11 @@
             border: none;
             cursor: pointer;
             font-size: 13px;
+            color: white;
         }
-        .btn-edit { background: #6b50ff; color: white; }
-        .btn-toggle { background: #64748b; color: white; }
+
+        .btn-edit   { background: #6b50ff; }
+        .btn-toggle { background: #64748b; }
 
         .create-panel {
             background: white;
@@ -122,15 +132,21 @@
             width: 350px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        .panel-title { font-size: 18px; font-weight: 700; }
 
-        input, select {
+        .panel-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .create-panel input,
+        .create-panel select {
             width: 100%;
             padding: 10px;
             margin-top: 8px;
             border-radius: 6px;
             border: 1px solid #ddd;
         }
+
         .btn-create {
             margin-top: 20px;
             width: 100%;
@@ -140,6 +156,7 @@
             border-radius: 6px;
             font-size: 16px;
             cursor: pointer;
+            border: none;
         }
     </style>
 </head>
@@ -150,25 +167,29 @@
     checkAccess(["ADMIN"]);
 </script>
 
-<div class="header">
-    <div class="title">관리자 시스템</div>
-    <div style="display:flex; align-items:center; gap:12px;">
-        <div id="admin-name"></div>
-        <button onclick="logout()" class="btn btn-edit">로그아웃</button>
-    </div>
-</div>
+<!-- ✅ 공통 헤더 (간호사/의사와 동일) -->
+<header>
+    <div>관리자 시스템</div>
 
+    <div class="header-right">
+        <div id="admin-name" class="user-info"></div>
+        <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+</header>
+
+<!-- 요약 카드 -->
 <div class="summary-boxes">
-    <div class="box">
+    <div class="box log-card login">
         <div class="box-title">전체 계정</div>
         <div class="box-value" id="totalCount">0명</div>
     </div>
-    <div class="box">
-        <div class="box-title">재직 계정</div>
+    <div class="box log-card logout">
+        <div class="box-title">활성 계정</div>
         <div class="box-value" id="activeCount">0명</div>
     </div>
 </div>
 
+<!-- 메뉴 -->
 <div class="menu">
     <a href="/html/admin_dashboard.html" class="active">계정 관리</a>
     <a href="/html/log.html">시스템 로그</a>
@@ -176,6 +197,7 @@
 
 <div class="content layout">
 
+    <!-- 왼쪽: 계정 테이블 -->
     <div style="flex:1">
         <table>
             <thead>
@@ -193,6 +215,7 @@
         </table>
     </div>
 
+    <!-- 오른쪽: 생성 / 수정 -->
     <div class="create-panel">
         <div class="panel-title">계정 생성 / 수정</div>
         <input id="empId" placeholder="직원번호">
@@ -231,22 +254,14 @@ async function loadUsers() {
             <td><span class="tag ${u.role.toLowerCase()}">${u.role}</span></td>
             <td>${u.phone ?? ""}</td>
             <td>${u.email ?? ""}</td>
-            <td>
-                <span class="status ${u.active ? 'active' : 'inactive'}">
-                    ${u.active ? '재직' : '퇴사'}
-                </span>
-            </td>
+            <td>${u.active ? "활성" : "비활성"}</td>
             <td>
                 <button class="btn btn-edit"
                     onclick="editUser('${u.employeeNo}')">수정</button>
-
-                ${u.role === 'ADMIN' ? '' : (
-                    u.active
-                    ? `<button class="btn btn-toggle"
-                        onclick="deactivateUser('${u.employeeNo}')">퇴사 처리</button>`
-                    : `<button class="btn btn-toggle"
-                        onclick="activateUser('${u.employeeNo}')">복구</button>`
-                )}
+                <button class="btn btn-toggle"
+                    onclick="toggleActive('${u.employeeNo}', ${u.active})">
+                    ${u.active ? "비활성화" : "활성화"}
+                </button>
             </td>
         </tr>`;
     });
@@ -255,14 +270,10 @@ async function loadUsers() {
     document.getElementById("activeCount").innerText = activeCnt + "명";
 }
 
-async function deactivateUser(employeeNo) {
-    if (!confirm("해당 직원을 퇴사 처리하시겠습니까?")) return;
-    await fetch(`/api/admin/users/${employeeNo}/deactivate`, { method: "PATCH" });
-    loadUsers();
-}
-
-async function activateUser(employeeNo) {
-    await fetch(`/api/admin/users/${employeeNo}/status?active=true`, { method: "PATCH" });
+async function toggleActive(employeeNo, current) {
+    await fetch(`/api/admin/users/${employeeNo}/status?active=${!current}`, {
+        method: "PATCH"
+    });
     loadUsers();
 }
 
@@ -275,7 +286,7 @@ async function createUser() {
 
     const body = {
         employeeNo: empId.value,
-        name: name.value.trim(),
+        name: nameInput.value.trim(),
         role: role.value,
         email: email.value,
         phone: phone.value
@@ -309,8 +320,8 @@ function editUser(employeeNo) {
     empId.value = employeeNo;
     empId.disabled = true;
 
-    name.value = row.children[1].innerText.trim();
-    role.value = row.children[2].innerText.trim();
+    name.value  = row.children[1].innerText.trim();
+    role.value  = row.children[2].innerText.trim();
     phone.value = row.children[3].innerText.trim();
     email.value = row.children[4].innerText.trim();
 
@@ -330,9 +341,13 @@ function resetForm() {
 
 window.addEventListener("DOMContentLoaded", () => {
     loadUsers();
+
     const name = localStorage.getItem("name");
     if (name) {
-        document.getElementById("admin-name").innerText = `${name} 님 환영합니다`;
+        document.getElementById("admin-name").innerHTML = `
+            <span class="user-name">${name} 님</span>
+            <span class="welcome-text">환영합니다</span>
+        `;
     }
 });
 </script>

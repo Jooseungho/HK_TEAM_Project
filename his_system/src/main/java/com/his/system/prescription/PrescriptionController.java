@@ -16,12 +16,23 @@ public class PrescriptionController {
     @PostMapping("/create")
     public ResponseEntity<?> createPrescription(
             @RequestParam Long visitId,
-            @RequestParam String doctorId,
             @RequestBody PrescriptionRequest req
     ) {
-        prescriptionService.createPrescription(visitId, doctorId, req);
+        String doctorEmployeeNo =
+                org.springframework.security.core.context.SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+                        .getName();
+
+        prescriptionService.createPrescription(
+                visitId,
+                doctorEmployeeNo,
+                req
+        );
+
         return ResponseEntity.ok("success");
     }
+
 
     // ✔ 단건 조회
     @GetMapping("/{id}")
