@@ -2,6 +2,7 @@ package com.his.system.prescription;
 
 import com.his.system.prescription.dto.PrescriptionRequest;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,9 +16,12 @@ public class PrescriptionController {
     @PostMapping("/create")
     public ResponseEntity<?> createPrescription(
             @RequestParam Long visitId,
+            @RequestParam String doctorId,
             @RequestBody PrescriptionRequest req
     ) {
+
         prescriptionService.createPrescription(visitId, req);
         return ResponseEntity.ok("success");
+
     }
 }

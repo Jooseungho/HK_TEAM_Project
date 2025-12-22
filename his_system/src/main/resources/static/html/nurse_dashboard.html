@@ -3,11 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>간호사 업무 시스템</title>
+<<<<<<< HEAD
     
 	<!-- 🔥 추가: 접근 권한 / 이름 표시 / 로그아웃 / 공통 함수 -->
     <script src="/js/access.js"></script>
 	<script src="/js/app.js"></script>
 	
+=======
+
+    <!-- 접근 권한 / 공통 함수 -->
+    <script src="/js/access.js"></script>
+    <script src="/js/app.js"></script>
+
+>>>>>>> parent of 12102fe (OJ)
     <link rel="stylesheet" href="/css/style.css">
 
     <style>
@@ -44,7 +52,6 @@
         .card-title { color: #555; margin-bottom: 7px; }
         .card-value { font-size: 22px; font-weight: 700; }
 
-        /* 탭 메뉴 */
         .tabs {
             display: flex;
             padding: 10px 30px 0;
@@ -66,7 +73,6 @@
             border-bottom: 3px solid #22a45d;
         }
 
-        /* 콘텐츠 영역 */
         #content-area {
             padding: 25px 30px;
         }
@@ -79,6 +85,7 @@
     <div style="display:flex; align-items:center; gap:10px;">
         간호사 업무 시스템
     </div>
+<<<<<<< HEAD
     <div style="display:flex; align-items:center; gap:12px;">
 
         <!-- 🔥 사용자 이름 표시용 영역 -->
@@ -87,15 +94,27 @@
         <!-- 🔥 로그아웃 버튼 -->
         <button onclick="logout()" 
                 style="padding:8px 15px; cursor:pointer;">
+=======
+
+    <div style="display:flex; align-items:center; gap:12px;">
+        <div id="nurse-name"></div>
+        <button onclick="logout()" style="padding:8px 15px; cursor:pointer;">
+>>>>>>> parent of 12102fe (OJ)
             로그아웃
         </button>
     </div>
 </header>
 
+<<<<<<< HEAD
 <!-- 🔥 추가: 페이지 로딩 직후 권한 검사 -->
 <script>
     checkAccess(["NURSE"]);
     // 이유: 간호사 대시보드는 NURSE 계정만 접근 가능해야 함
+=======
+<!-- 권한 체크 -->
+<script>
+    checkAccess(["NURSE"]);
+>>>>>>> parent of 12102fe (OJ)
 </script>
 
 <!-- 상단 카드 -->
@@ -118,7 +137,7 @@
     </div>
 </div>
 
-<!-- 탭 메뉴 -->
+<!-- 탭 -->
 <div class="tabs">
     <div class="tab active" data-tab="patient_register">환자 등록</div>
     <div class="tab" data-tab="visit_register">환자 접수</div>
@@ -127,26 +146,23 @@
     <div class="tab" data-tab="nurse_document">문서 조회</div>
 </div>
 
-<!-- 탭 콘텐츠 영역 -->
+<!-- 콘텐츠 -->
 <div id="content-area"></div>
 
 <script>
 /* ------------------------------------------
-   1) 탭 클릭 시 → HTML 불러와 삽입
+   탭 클릭
 ------------------------------------------ */
 document.querySelectorAll(".tab").forEach(tab => {
     tab.addEventListener("click", () => {
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
-
-        let file = tab.dataset.tab;
-        console.log(file);
-        loadTabContent(file);
+        loadTabContent(tab.dataset.tab);
     });
 });
 
 /* ------------------------------------------
-   2) HTML 파일 fetch → content-area에 삽입
+   탭 콘텐츠 로딩
 ------------------------------------------ */
 function loadTabContent(file) {
     fetch(`/html/${file}.html`)
@@ -155,8 +171,9 @@ function loadTabContent(file) {
             const contentArea = document.getElementById("content-area");
             contentArea.innerHTML = html;
 
-            // script 실행
+            // script 중복 실행 방지
             const scripts = contentArea.querySelectorAll("script");
+
 
 //             scripts.forEach(scriptTag => {
 //                 const newScript = document.createElement("script");
@@ -186,21 +203,19 @@ function loadTabContent(file) {
 			// 수정 -------------------------------------
 
 
-            // 🔥 탭별 초기 함수 실행
-            if (file === "patient_register") {
-                if (typeof loadPatientRegisterList === "function") loadPatientRegisterList();
-            }
-            if (file === "visit_register") {
-                if (typeof initVisitRegisterPage === "function") initVisitRegisterPage();
-            }
 
+            // 탭별 초기 함수
+            if (file === "patient_register" && typeof loadPatientRegisterList === "function") {
+                loadPatientRegisterList();
+            }
+            if (file === "visit_register" && typeof initVisitRegisterPage === "function") {
+                initVisitRegisterPage();
+            }
         });
 }
 
-
-
 /* ------------------------------------------
-   3) 환자 목록 불러오기 함수 (전역 등록)
+   환자 목록
 ------------------------------------------ */
 function loadPatientList() {
     fetch("/api/patient/list")
@@ -228,28 +243,49 @@ function renderPatientList(list) {
         `;
     });
 }
+/* ------------------------------------------
+🔥 [추가] 상단 카드 카운트 로드 (최소 변경)
+------------------------------------------ */
+async function loadNurseDashboardCounts() {
+ const res = await fetch("/api/visit/status_counts");
+ if (!res.ok) return;
+
+ const data = await res.json();
+
+ const total =
+     (data.WAITING ?? 0) +
+     (data.IN_TREATMENT ?? 0) +
+     (data.DONE ?? 0);
+
+ document.getElementById("total-count").innerText = `${total}명`;
+ document.getElementById("waiting-count").innerText = `${data.WAITING ?? 0}명`;
+ document.getElementById("done-count").innerText = `${data.DONE ?? 0}명`;
+}
 
 /* ------------------------------------------
-   4) 신규 등록 버튼
+   신규 등록 이동
 ------------------------------------------ */
 function openPatientRegister() {
     loadTabContent("patient_register_form");
 }
 
 /* ------------------------------------------
-   5) 첫 로딩 → 환자등록 탭 표시
+   초기 로딩
 ------------------------------------------ */
 loadTabContent("patient_register");
+loadNurseDashboardCounts();
 
 /* 🔥 사용자 이름 박스 업데이트 */
+
 window.addEventListener("load", () => {
     const name = localStorage.getItem("name");
     if (name) {
         document.getElementById("nurse-name").innerText = `${name} 님 환영합니다`;
     }
 });
-   
+
 </script>
 
 </body>
 </html>
+ 

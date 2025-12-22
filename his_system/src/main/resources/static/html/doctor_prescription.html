@@ -289,6 +289,9 @@ function deleteTreatment(idx) {
 async function saveAll() {
     const visitId = sessionStorage.getItem("currentVisitId");
 
+    // ⭐ 로그인한 의사 ID 저장해두면 여기서 자동으로 읽음
+    const doctorId = sessionStorage.getItem("doctorId") || 1;
+
     if (!visitId) {
         alert("현재 선택된 환자가 없습니다.");
         return;
@@ -300,7 +303,9 @@ async function saveAll() {
         treatments: treatmentList
     };
 
+
     const res = await fetch(`/api/prescription/create?visitId=${visitId}`, {
+
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
@@ -314,7 +319,6 @@ async function saveAll() {
 
     alert("처방이 정상적으로 저장되었습니다.");
 }
-
 
 /* 처음 들어왔을 때 환자 정보 로딩 */
 loadPatientInfo();

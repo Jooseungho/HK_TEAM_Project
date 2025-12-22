@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>처방전</title>
+    <style>
+        body {
+            font-family: "Noto Sans KR", sans-serif;
+            color: #111827;
+            line-height: 1.7;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>처방전</h2>
+
+<div class="info-grid">
+    <p><strong>환자명:</strong> {{patientName}}</p>
+    <p><strong>차트번호:</strong> {{chartNo}}</p>
+    <p><strong>진료번호:</strong> {{visitId}}</p>
+    <p><strong>발행일:</strong> {{issuedAt}}</p>
+</div>
+
+<div class="box">
+    <strong>처방 내용</strong>
+    <p style="margin-top: 10px;">{{content}}</p>
+</div>
+
+<div class="footer">
+    <p><strong>발행의사:</strong> {{doctorName}}</p>
+    <p>{{issuedAt}}</p>
+</div>
+
+</body>
+</html>
