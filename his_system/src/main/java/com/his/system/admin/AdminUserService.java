@@ -3,12 +3,12 @@ package com.his.system.admin;
 import com.his.system.staff.Staff;
 import com.his.system.staff.StaffRepository;
 import com.his.system.staff.StaffRole;
+import com.his.system.systemlog.SystemLogActionType;
+import com.his.system.systemlog.SystemLoggable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,10 +29,8 @@ public class AdminUserService {
                 .role(request.getRole())
                 .phone(request.getPhone())
                 .email(request.getEmail())
-                .password(request.getPhone()) // 🔥 평문 저장
+                .password(request.getPhone()) // ⚠️ 평문 (의도된 설계)
                 .active(true)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
 
         staffRepository.save(staff);
@@ -48,10 +46,11 @@ public class AdminUserService {
     }
 
     // ===============================
-    // 3️⃣ 계정 수정
+    // 3️⃣ 계정 정보 수정
     // ===============================
     @Transactional
     public void updateUser(String employeeNo, UpdateUserRequest request) {
+
         Staff staff = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("직원 없음"));
 
@@ -63,33 +62,39 @@ public class AdminUserService {
         staff.setRole(request.getRole());
         staff.setPhone(request.getPhone());
         staff.setEmail(request.getEmail());
-        staff.setUpdatedAt(LocalDateTime.now());
+        // updatedAt → @UpdateTimestamp로 자동 처리
     }
 
     // ===============================
-    // 4️⃣ 계정 삭제
+    // 4️⃣ 직원 퇴사 처리 (삭제 ❌)
     // ===============================
+    @SystemLoggable(action = SystemLogActionType.ACCOUNT_DEACTIVATE)
     @Transactional
-    public void deleteUser(String employeeNo) {
+    public void deactivateUser(String employeeNo) {
+
         Staff staff = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("직원 없음"));
 
         if (staff.getRole() == StaffRole.ADMIN) {
-            throw new IllegalStateException("관리자 계정은 삭제할 수 없습니다.");
+            throw new IllegalStateException("관리자 계정은 퇴사 처리할 수 없습니다.");
         }
 
-        staffRepository.delete(staff);
+        if (!staff.isActive()) {
+            return; // 이미 퇴사 처리된 경우
+        }
+
+        staff.setActive(false);
     }
 
     // ===============================
-    // 5️⃣ 활성 / 비활성 변경
+    // 5️⃣ 계정 활성 / 복구 처리
     // ===============================
     @Transactional
     public void changeActive(String employeeNo, boolean active) {
+
         Staff staff = staffRepository.findByEmployeeNo(employeeNo)
                 .orElseThrow(() -> new RuntimeException("직원 없음"));
 
         staff.setActive(active);
-        staff.setUpdatedAt(LocalDateTime.now());
     }
 }

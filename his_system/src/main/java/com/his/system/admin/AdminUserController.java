@@ -13,20 +13,26 @@ public class AdminUserController {
 
     private final AdminUserService adminUserService;
 
+    // ===============================
     // 1️⃣ 계정 생성
+    // ===============================
     @PostMapping("/users")
     public ResponseEntity<Void> createUser(@RequestBody CreateUserRequest request) {
         adminUserService.createUser(request);
         return ResponseEntity.ok().build();
     }
 
+    // ===============================
     // 2️⃣ 계정 전체 조회
+    // ===============================
     @GetMapping("/users")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(adminUserService.getAllUsers());
     }
 
- // 계정 수정
+    // ===============================
+    // 3️⃣ 계정 정보 수정
+    // ===============================
     @PutMapping("/users/{employeeNo}")
     public ResponseEntity<Void> updateUser(
             @PathVariable String employeeNo,
@@ -36,17 +42,20 @@ public class AdminUserController {
         return ResponseEntity.ok().build();
     }
 
-    // 계정 삭제
-    @DeleteMapping("/users/{employeeNo}")
-    public ResponseEntity<Void> deleteUser(
+    // ===============================
+    // 4️⃣ 직원 퇴사 처리 (삭제 ❌)
+    // ===============================
+    @PatchMapping("/users/{employeeNo}/deactivate")
+    public ResponseEntity<Void> deactivateUser(
             @PathVariable String employeeNo
     ) {
-        adminUserService.deleteUser(employeeNo);
+        adminUserService.deactivateUser(employeeNo);
         return ResponseEntity.ok().build();
     }
 
-
-    // 5️⃣ 활성 / 비활성 변경
+    // ===============================
+    // 5️⃣ 계정 활성 / 복구 처리
+    // ===============================
     @PatchMapping("/users/{employeeNo}/status")
     public ResponseEntity<Void> updateUserStatus(
             @PathVariable String employeeNo,

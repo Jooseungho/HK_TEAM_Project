@@ -18,6 +18,9 @@ public enum SystemLogActionType {
     DOCUMENT_ISSUE("문서 발행"),
     DOCUMENT_PRINT("문서 출력"),
 
+    // 계정 관리 🔥 추가
+    ACCOUNT_DEACTIVATE("계정 퇴사 처리"),
+    
     // 시스템
     SYSTEM_ACCESS("시스템 접근"),
     SYSTEM_ERROR("시스템 오류");

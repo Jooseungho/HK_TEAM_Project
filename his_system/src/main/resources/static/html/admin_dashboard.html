@@ -39,7 +39,6 @@
         .box-title { font-size: 15px; color: #555; }
         .box-value { margin-top: 8px; font-size: 28px; font-weight: 700; }
 
-        /* 🔥 메뉴 */
         .menu {
             display: flex;
             gap: 20px;
@@ -77,10 +76,9 @@
             padding: 12px;
             border-top: 1px solid #eee;
             font-size: 14px;
-            vertical-align: middle; /* 🔥 정렬 */
+            vertical-align: middle;
         }
 
-        /* 🔥 관리 버튼 정렬 */
         td:last-child {
             display: flex;
             gap: 6px;
@@ -98,6 +96,15 @@
         .tag.nurse { background: #16a34a; }
         .tag.admin { background: #9333ea; }
 
+        .status.active {
+            color: #16a34a;
+            font-weight: 700;
+        }
+        .status.inactive {
+            color: #ef4444;
+            font-weight: 700;
+        }
+
         .btn {
             padding: 7px 12px;
             border-radius: 6px;
@@ -106,7 +113,6 @@
             font-size: 13px;
         }
         .btn-edit { background: #6b50ff; color: white; }
-        .btn-delete { background: #ef4444; color: white; }
         .btn-toggle { background: #64748b; color: white; }
 
         .create-panel {
@@ -158,21 +164,18 @@
         <div class="box-value" id="totalCount">0명</div>
     </div>
     <div class="box">
-        <div class="box-title">활성 계정</div>
+        <div class="box-title">재직 계정</div>
         <div class="box-value" id="activeCount">0명</div>
     </div>
 </div>
 
-<!-- 🔥 메뉴 href 복구 -->
 <div class="menu">
     <a href="/html/admin_dashboard.html" class="active">계정 관리</a>
     <a href="/html/log.html">시스템 로그</a>
-    <a href="/html/inventory.html">재고 관리</a>
 </div>
 
 <div class="content layout">
 
-    <!-- 왼쪽: 계정 테이블 -->
     <div style="flex:1">
         <table>
             <thead>
@@ -190,7 +193,6 @@
         </table>
     </div>
 
-    <!-- 오른쪽: 생성/수정 -->
     <div class="create-panel">
         <div class="panel-title">계정 생성 / 수정</div>
         <input id="empId" placeholder="직원번호">
@@ -229,19 +231,22 @@ async function loadUsers() {
             <td><span class="tag ${u.role.toLowerCase()}">${u.role}</span></td>
             <td>${u.phone ?? ""}</td>
             <td>${u.email ?? ""}</td>
-            <td>${u.active ? "활성" : "비활성"}</td>
+            <td>
+                <span class="status ${u.active ? 'active' : 'inactive'}">
+                    ${u.active ? '재직' : '퇴사'}
+                </span>
+            </td>
             <td>
                 <button class="btn btn-edit"
                     onclick="editUser('${u.employeeNo}')">수정</button>
 
-                <button class="btn btn-toggle"
-                    onclick="toggleActive('${u.employeeNo}', ${u.active})">
-                    ${u.active ? "비활성화" : "활성화"}
-                </button>
-
-                ${u.role === 'ADMIN' ? '' : `
-                <button class="btn btn-delete"
-                    onclick="deleteUser('${u.employeeNo}')">삭제</button>`}
+                ${u.role === 'ADMIN' ? '' : (
+                    u.active
+                    ? `<button class="btn btn-toggle"
+                        onclick="deactivateUser('${u.employeeNo}')">퇴사 처리</button>`
+                    : `<button class="btn btn-toggle"
+                        onclick="activateUser('${u.employeeNo}')">복구</button>`
+                )}
             </td>
         </tr>`;
     });
@@ -250,28 +255,30 @@ async function loadUsers() {
     document.getElementById("activeCount").innerText = activeCnt + "명";
 }
 
-async function toggleActive(employeeNo, current) {
-    await fetch(`/api/admin/users/${employeeNo}/status?active=${!current}`, {
-        method: "PATCH"
-    });
+async function deactivateUser(employeeNo) {
+    if (!confirm("해당 직원을 퇴사 처리하시겠습니까?")) return;
+    await fetch(`/api/admin/users/${employeeNo}/deactivate`, { method: "PATCH" });
+    loadUsers();
+}
+
+async function activateUser(employeeNo) {
+    await fetch(`/api/admin/users/${employeeNo}/status?active=true`, { method: "PATCH" });
     loadUsers();
 }
 
 async function createUser() {
-
     const nameInput = document.getElementById("name");
-
     if (!nameInput.value.trim()) {
         alert("이름은 필수입니다.");
         return;
     }
 
     const body = {
-        employeeNo: document.getElementById("empId").value,
-        name: nameInput.value.trim(),
-        role: document.getElementById("role").value,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("phone").value
+        employeeNo: empId.value,
+        name: name.value.trim(),
+        role: role.value,
+        email: email.value,
+        phone: phone.value
     };
 
     if (editingEmployeeNo) {
@@ -298,29 +305,16 @@ function editUser(employeeNo) {
     const row = [...document.querySelectorAll("#userTable tr")]
         .find(tr => tr.children[0].innerText === employeeNo);
 
-    if (!row) {
-        alert("수정할 계정을 찾지 못했습니다.");
-        return;
-    }
-
     editingEmployeeNo = employeeNo;
+    empId.value = employeeNo;
+    empId.disabled = true;
 
-    const empIdInput = document.getElementById("empId");
-    empIdInput.value = employeeNo;
-    empIdInput.disabled = true;
-
-    document.getElementById("name").value = row.children[1].innerText.trim();
-    document.getElementById("role").value = row.children[2].innerText.trim();
-    document.getElementById("phone").value = row.children[3].innerText.trim();
-    document.getElementById("email").value = row.children[4].innerText.trim();
+    name.value = row.children[1].innerText.trim();
+    role.value = row.children[2].innerText.trim();
+    phone.value = row.children[3].innerText.trim();
+    email.value = row.children[4].innerText.trim();
 
     document.querySelector(".btn-create").innerText = "수정 완료";
-}
-
-async function deleteUser(employeeNo) {
-    if (!confirm("정말 삭제할까요?")) return;
-    await fetch(`/api/admin/users/${employeeNo}`, { method: "DELETE" });
-    loadUsers();
 }
 
 function resetForm() {

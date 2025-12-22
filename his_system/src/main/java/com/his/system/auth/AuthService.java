@@ -27,6 +27,11 @@ public class AuthService {
         Staff staff = staffRepository.findByEmployeeNo(request.getEmployeeNo())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 직원 번호입니다."));
 
+        // ✅ 퇴사 계정 로그인 차단 (핵심)
+        if (!staff.isActive()) {
+            throw new RuntimeException("퇴사 처리된 계정입니다.");
+        }
+
         String inputPw = normalizePhone(request.getPassword());
         String savedPw = normalizePhone(staff.getPassword());
 
