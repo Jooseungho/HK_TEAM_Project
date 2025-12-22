@@ -2,54 +2,85 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>처치 관리 - 간호사</title>
+    <title>간호사 처치 관리</title>
 
     <style>
         body {
             font-family: 'Pretendard', sans-serif;
             background: #f9fafb;
             margin: 0;
-            padding: 20px;
+            padding: 20px 40px;
         }
 
-        .title {
-            font-size: 24px;
+        h2 {
+            font-size: 26px;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
-        .section {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
+        .columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
         }
 
         .section-title {
             font-size: 20px;
             font-weight: 700;
             margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .task-item {
-            padding: 15px;
-            background: #f3f4f6;
-            border-radius: 10px;
-            margin-bottom: 12px;
+        .icon-wait {
+            width: 12px;
+            height: 12px;
+            background: #2563eb;
+            border-radius: 3px;
         }
 
-        .task-item strong {
-            font-size: 17px;
+        .icon-done {
+            width: 12px;
+            height: 12px;
+            background: #22c55e;
+            border-radius: 3px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .left-area {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .item-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .sub-info {
+            color: #6b7280;
+            font-size: 14px;
         }
 
         .btn-complete {
-            margin-top: 10px;
-            padding: 8px 14px;
-            border: none;
+            padding: 10px 22px;
             background: #22c55e;
+            border: none;
+            border-radius: 10px;
             color: white;
-            border-radius: 8px;
+            font-size: 15px;
             cursor: pointer;
         }
 
@@ -57,54 +88,80 @@
             background: #16a34a;
         }
 
+        .done-text {
+            color: #22c55e;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
         .empty {
-            padding: 15px;
+            padding: 20px;
+            text-align: center;
             color: #9ca3af;
         }
     </style>
 </head>
+
 <body>
 
-<div class="title">🩺 간호사 처치 관리</div>
+<h2>🩺 간호사 처치 관리</h2>
 
-<!-- 대기 중 -->
-<div class="section">
-    <div class="section-title">⏳ 대기 중 처치</div>
-    <div id="pending-area" class="empty">대기 중 처치가 없습니다.</div>
-</div>
+<div class="columns">
 
-<!-- 완료된 처치 -->
-<div class="section">
-    <div class="section-title">✅ 완료된 처치</div>
-    <div id="done-area" class="empty">완료된 처치가 없습니다.</div>
+    <!-- 🟦 처치 대기 -->
+    <div>
+        <div class="section-title">
+            <span class="icon-wait"></span> 처치 대기
+        </div>
+        <div id="pending-area">🔄 데이터를 불러오는 중입니다...</div>
+    </div>
+
+    <!-- 🟩 처치 완료 -->
+    <div>
+        <div class="section-title">
+            <span class="icon-done"></span> 처치 완료
+        </div>
+        <div id="done-area">🔄 데이터를 불러오는 중입니다...</div>
+    </div>
+
 </div>
 
 <script>
-/* ------------------------------------------
+/* ---------------------------------------------
     데이터 로드
--------------------------------------------- */
+---------------------------------------------- */
 async function loadTasks() {
 
-    // 대기 중
+    // 🔵 대기 중 데이터
     const pendingRes = await fetch("/api/nurse/task/pending");
-    const pending = await pendingRes.json();
+    let pending = await pendingRes.json();
 
+    // ✔ 처치 + 주사
+    pending = pending.filter(t =>
+        t.itemType === "PROCEDURE" || t.itemType === "INJECTION"
+    );
     renderPending(pending);
 
-    // 완료된 목록
+    // 🟢 완료된 데이터
     const doneRes = await fetch("/api/nurse/task/done");
-    const done = await doneRes.json();
+    let done = await doneRes.json();
 
+    // ✔ 처치 + 주사
+    done = done.filter(t =>
+        t.itemType === "PROCEDURE" || t.itemType === "INJECTION"
+    );
     renderDone(done);
 }
 
-/* ------------------------------------------
-    대기 중 처치 렌더링
--------------------------------------------- */
+
+
+/* ---------------------------------------------
+    처치 대기 렌더링
+---------------------------------------------- */
 function renderPending(list) {
     const area = document.getElementById("pending-area");
 
-    if (!list || list.length === 0) {
+    if (list.length === 0) {
         area.innerHTML = "<div class='empty'>대기 중 처치가 없습니다.</div>";
         return;
     }
@@ -113,11 +170,13 @@ function renderPending(list) {
 
     list.forEach(task => {
         area.innerHTML += `
-            <div class="task-item">
-                <strong>${task.itemName}</strong>  
-                <div style="color:#6b7280;">
-                    유형: ${task.itemType}  
-                    <br>환자 ID: ${task.patientId}
+            <div class="card">
+                <div class="left-area">
+                    <div class="item-title">${task.itemName}</div>
+                    <div class="sub-info">
+                        환자 ID: ${task.patientId}<br>
+                        유형: ${task.itemType}
+                    </div>
                 </div>
 
                 <button class="btn-complete" onclick="completeTask(${task.id})">
@@ -128,14 +187,14 @@ function renderPending(list) {
     });
 }
 
-/* ------------------------------------------
-    완료된 처치 렌더링
--------------------------------------------- */
+/* ---------------------------------------------
+    처치 완료 렌더링
+---------------------------------------------- */
 function renderDone(list) {
     const area = document.getElementById("done-area");
 
-    if (!list || list.length === 0) {
-        area.innerHTML = "<div class='empty'>완료된 처치가 없습니다.</div>";
+    if (list.length === 0) {
+        area.innerHTML = "<div class='empty'>처치 완료 내역이 없습니다.</div>";
         return;
     }
 
@@ -143,34 +202,35 @@ function renderDone(list) {
 
     list.forEach(task => {
         area.innerHTML += `
-            <div class="task-item" style="background:#e0ffe4;">
-                <strong>${task.itemName}</strong>  
-                <div style="color:#6b7280;">
-                    유형: ${task.itemType}  
-                    <br>환자 ID: ${task.patientId}
-                    <br>완료 시간: ${task.doneAt || '-'}
+            <div class="card">
+                <div class="left-area">
+                    <div class="item-title">${task.itemName}</div>
+                    <div class="sub-info">
+                        환자 ID: ${task.patientId}<br>
+                        완료 시간: ${task.doneAt || '-'}
+                    </div>
                 </div>
+
+                <div class="done-text">✔ 완료</div>
             </div>
         `;
     });
 }
 
-/* ------------------------------------------
+/* ---------------------------------------------
     완료 처리 API
--------------------------------------------- */
+---------------------------------------------- */
 async function completeTask(id) {
-    if (!confirm("정말 완료 처리하시겠습니까?")) return;
+    if (!confirm("해당 처치를 완료 처리하시겠습니까?")) return;
 
     await fetch(`/api/nurse/task/${id}/complete`, {
         method: "POST"
     });
 
-    loadTasks(); // 새로고침
+    loadTasks();
 }
 
-/* ------------------------------------------
-    페이지 로드 시 바로 실행 (중요!!)
--------------------------------------------- */
+/* --------------------------------------------- */
 loadTasks();
 </script>
 

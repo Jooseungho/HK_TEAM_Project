@@ -19,20 +19,20 @@ public class Billing {
     @Column(name = "BILL_ID")
     private Long id;
 
-    // VISIT FK
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "VISIT_ID", nullable = false)
     private Visit visit;
 
-    @Column(name = "TOTAL_AMOUNT", nullable = false)
+    @Column(name = "TOTAL_AMOUNT")
     private Integer totalAmount;
 
     @Column(name = "PAID")
-    private Integer paid;   // TINYINT → Integer로 처리
+    private Boolean paid;
 
     @Column(name = "PAID_AT")
     private LocalDateTime paidAt;
+    
+    @Column(name = "PRICE") // ⭐ 신설된 컬럼
+    private Integer price;
 
-    @Column(name = "CREATED_AT")
-    private LocalDateTime createdAt;
 }

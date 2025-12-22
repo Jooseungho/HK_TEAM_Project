@@ -12,35 +12,27 @@ public class BillingController {
 
     private final BillingService billingService;
 
-    // 1. 수납 생성
-    @PostMapping("/create")
-    public Billing createBilling(@RequestParam Long visitId,
-                                 @RequestParam Integer totalAmount) {
-
-        return billingService.createBilling(visitId, totalAmount);
+    /** 🔵 수납 대기 목록 */
+    @GetMapping("/waiting")
+    public List<BillingResponse> waitingList() {
+        return billingService.findBillingWaitingList();
     }
 
-    // 2. 결제 처리
-    @PostMapping("/pay")
-    public Billing payBilling(@RequestParam Long billingId) {
-        return billingService.payBilling(billingId);
+    /** 🔵 결제 완료 처리 */
+    @PostMapping("/{billingId}/complete")
+    public Billing completeBilling(@PathVariable Long billingId) {
+        return billingService.completeBilling(billingId);
     }
 
-    // 3. 단일 조회
-    @GetMapping("/{id}")
-    public Billing getBilling(@PathVariable Long id) {
-        return billingService.getBilling(id);
+    /** 🔵 수납 완료 목록 */
+    @GetMapping("/completed")
+    public List<BillingResponse> completedList() {
+        return billingService.findBillingCompletedList();
     }
 
-    // 4. 전체 조회
-    @GetMapping("/list")
-    public List<Billing> getAllBillings() {
-        return billingService.getAllBillings();
-    }
-
-    // 5. 내원별 수납 조회
-    @GetMapping("/visit/{visitId}")
-    public Billing getBillingByVisit(@PathVariable Long visitId) {
-        return billingService.getBillingByVisit(visitId);
+    /** 🆕 수납 상세 내역 조회 */
+    @GetMapping("/{visitId}/items")
+    public List<BillingItemResponse> billingItems(@PathVariable Long visitId) {
+        return billingService.getBillingItems(visitId);
     }
 }

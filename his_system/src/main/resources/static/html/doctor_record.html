@@ -95,10 +95,12 @@ async function saveRecord() {
     alert("진료가 완료되었습니다.");
 
     // ✅ 핵심: 현재 진료 환자 제거
-    sessionStorage.removeItem("currentVisitId");
+    //sessionStorage.removeItem("currentVisitId");
 
-    // ✅ 대시보드로 이동
-    location.href = "/html/doctor_dashboard.html";
+ // ✅ 처방 관리 탭으로 이동
+    document
+      .querySelector('.tab[data-tab="doctor_prescription"]')
+      ?.click();
 }
 
 // 실행

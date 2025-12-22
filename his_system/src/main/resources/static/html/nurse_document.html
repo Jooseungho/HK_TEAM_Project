@@ -1,10 +1,618 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>문서 조회//</title>
+<meta charset="UTF-8" />
+<title>문서 조회</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link
+	href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* ===== 기본 리셋 & 공통 ===== */
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: 'Noto Sans KR', sans-serif;
+	background-color: #f5f7fb;
+	color: #111827;
+}
+
+a {
+	text-decoration: none;
+	color: inherit;
+}
+
+button {
+	font-family: inherit;
+	border: none;
+	background: none;
+	cursor: pointer;
+}
+
+/* ===== 페이지 전체를 꽉 채우도록 변경됨 ===== */
+.page {
+	width: 100%;
+	padding: 0 40px 48px;
+	margin-top: 32px;
+}
+
+/* ===== 카드 공통 (각진 느낌) ===== */
+.card {
+	background-color: #ffffff;
+	border-radius: 8px; /* 둥근 정도 감소 */
+	border: 1px solid #e5e7eb;
+	box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05); /* shadow-sm 느낌 */
+	padding: 24px 28px;
+	width: 100%;
+}
+
+.card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 0; /* 상단 박스에서 사용 */
+}
+
+.card-title {
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.card-subtitle {
+	font-size: 13px;
+	color: #6b7280;
+	margin-top: 4px;
+}
+
+/* ===== grid → 화면 꽉 채워서 확장 ===== */
+.grid-2 {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 24px;
+	margin-top: 24px;
+	width: 100%;
+}
+
+.grid-main {
+	display: grid;
+	grid-template-columns: 0.7fr 1.3fr;
+	gap: 24px;
+	margin-top: 24px;
+	width: 100%;
+}
+
+/* ===== 상단 "문서 관리" 영역 (요청 사항 반영) ===== */
+.doc-manage-box {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+/* 요청하기 버튼 (각진 모양, 문서 관리 박스 안에 포함) */
+.doc-manage-button {
+	width: 200px; /* 크기 조정 */
+	padding: 10px 18px;
+	border-radius: 6px; /* 둥근 정도 감소 */
+	background-color: #2563eb;
+	font-size: 14px;
+	font-weight: 600;
+	color: #ffffff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+}
+
+/* ===== 요청 대기 / 최근 발행 ===== */
+.badge-round {
+	padding: 4px 10px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.badge-yellow {
+	background: #fef3c7;
+	color: #92400e;
+}
+
+.badge-green-soft {
+	background: #dcfce7;
+	color: #166534;
+}
+
+.status-title {
+	font-size: 16px;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.status-count {
+	font-size: 13px;
+	color: #6b7280;
+	margin-bottom: 8px;
+}
+
+/* 타이틀 아래 구분선 */
+.with-line {
+	padding-bottom: 10px;
+	border-bottom: 1px solid #e5e7eb;
+	margin-bottom: 18px;
+}
+
+.status-empty {
+	text-align: center;
+	padding: 36px 0;
+	color: #9ca3af;
+	font-size: 14px;
+}
+
+.status-empty-icon {
+	font-size: 36px;
+	margin-bottom: 12px;
+}
+
+.recent-row {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 16px;
+}
+
+.recent-patient {
+	font-weight: 600;
+	font-size: 15px;
+}
+
+.recent-chart {
+	padding: 2px 8px;
+	border-radius: 4px; /* 둥근 정도 감소 */
+	background: #f3f4f6;
+	font-size: 11px;
+	margin-left: 6px;
+	color: #4b5563; /* 짙은 회색 */
+}
+
+/* 처방전/진료확인서 태그 ( */
+.pill-type {
+	display: inline-block;
+	padding: 4px 10px;
+	border-radius: 9px;
+	font-size: 12px;
+	font-weight: 600;
+	background-color: #e0edff; /* 처방전 색 */
+	color: #1d4ed8;
+	width: auto;
+}
+
+.btn-primary-outline {
+	padding: 8px 18px;
+	border-radius: 6px; /* 각진 느낌 */
+	border: 1px solid #16a34a;
+	background-color: #16a34a;
+	color: white;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+/* ===== 문서 목록 (요청 사항 반영: 제목과 목록 간격 조정) ===== */
+.doc-list-area {
+	margin-top: 18px; /* 제목과 목록 간격 조정 */
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.doc-row {
+	padding: 14px 18px;
+	border-bottom: 1px solid #eef2f7;
+	cursor: pointer;
+	background: transparent !important;
+	display: flex;
+	flex-direction: column;
+}
+
+.doc-row.active {
+	background: #edf2ff;
+}
+
+.doc-row>div {
+	margin-top: 6px;
+} /* 간격 조정 */
+
+/* ===== 미리보기 (출력/다운로드 버튼 가로 배치 및 아이콘 수정) ===== */
+.preview-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 18px;
+}
+
+.preview-actions {
+	display: flex;
+	gap: 8px; /* 버튼 간 간격 */
+}
+
+/* 출력 버튼 (아이콘 포함, 각진 느낌) */
+.btn-green-preview {
+	padding: 9px 15px;
+	border-radius: 6px;
+	background: #16a34a;
+	color: white;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 14px;
+}
+
+/* 다운로드 버튼 (아이콘 포함, 각진 느낌) */
+.btn-white-outline-preview {
+	padding: 9px 15px;
+	border-radius: 6px;
+	background: white;
+	border: 1px solid #d1d5db;
+	color: #374151;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 14px;
+}
+
+.preview-inner {
+	border: 1px solid #e5e7eb;
+	padding: 28px 40px;
+	border-radius: 8px;
+	background: white;
+}
+
+/* ===== 반응형 ===== */
+@media ( max-width :1024px) {
+	.grid-2, .grid-main {
+		grid-template-columns: 1fr;
+	}
+	.doc-manage-button {
+		width: 100%;
+	}
+}
+</style>
 </head>
+
 <body>
+	<div class="page">
+
+		<div class="card">
+			<div class="doc-manage-box">
+				<div>
+					<div class="card-title">문서 관리</div>
+				</div>
+				<button class="doc-manage-button">
+					<i class="fas fa-plus"></i> 의사에게 문서 요청하기
+				</button>
+			</div>
+		</div>
+
+		<div class="grid-2">
+
+			<div class="card">
+				<div class="with-line">
+					<div class="status-title">요청 대기 중</div>
+					<div class="status-count">0건</div>
+				</div>
+				<div class="status-empty">
+					<div class="status-empty-icon">
+						<i class="far fa-file-alt"></i>
+					</div>
+					요청 대기 문서가 없습니다
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="with-line">
+					<div class="status-title">최근 발행 완료</div>
+					<div class="status-count">1건</div>
+				</div>
+
+				<div class="recent-row">
+					<div>
+						<div class="recent-patient">
+							홍길동 <span class="recent-chart">C2024001</span>
+						</div>
+						<span class="pill-type">처방전</span>
+						<div style="margin-top: 4px; font-size: 12px; color: #6b7280;">발행:
+							2025. 11. 28. 오전 10:30</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="grid-main">
+
+			<div class="card">
+				<div class="card-title">발행된 문서 목록</div>
+				<div class="doc-list-area">
+					<!-- <div class="doc-row active">
+						<span class="pill-type">처방전</span>
+						<div>환자 ID: P001</div>
+						<div style="font-size: 12px; color: #6b7280;">발행: 김의사 ·
+							2025. 11. 20. 오후 3:00</div>
+					</div>
+					<div class="doc-row">
+						<span class="pill-type"
+							style="background: #dcfce7; color: #065f46;">진료확인서</span>
+						<div>환자 ID: P002</div>
+						<div style="font-size: 12px; color: #6b7280;">발행: 박의사 ·
+							2025. 11. 15. 오후 10:30</div>
+					</div> -->
+				</div>
+			</div>
+
+			<div class="card preview-card">
+				<div class="preview-header">
+					<div class="card-title">문서 미리보기</div>
+
+					<div class="preview-actions">
+						<button class="btn-green-preview">
+							<i class="fas fa-print"></i> 출력
+						</button>
+						<button class="btn-white-outline-preview">
+							<i class="fas fa-download"></i> 다운로드
+						</button>
+					</div>
+				</div>
+
+				<div class="preview-inner">
+					<h2 style="text-align: center;">처방전</h2>
+
+					<div
+						style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 30px; margin-bottom: 20px;">
+						<p>
+							<strong>환자 ID:</strong> P001
+						</p>
+						<p>
+							<strong>진료 기록 ID:</strong> MR001
+						</p>
+						<p>
+							<strong>발행자:</strong> 김의사
+						</p>
+						<p>
+							<strong>발행일시:</strong> 2025. 11. 20. 오후 3:00
+						</p>
+					</div>
+
+					<div
+						style="margin-top: 20px; background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+						<div style="font-weight: 600; margin-bottom: 10px;">문서 내용</div>
+						<div style="font-size: 14px; color: #374151;">타이레놀 500mg 1일
+							3회 7일분</div>
+						<br>
+						<div style="font-size: 14px; color: #374151;">상기 환자에게 위와 같이
+							처방합니다.</div>
+					</div>
+
+					<div
+						style="text-align: right; margin-top: 40px; font-size: 14px; color: #4b5563;">
+						<p style="font-weight: 600; color: #111827;">발행: 김의사</p>
+						<p>2025. 11. 20.</p>
+					</div>
+
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<script>
+
+	const nurseId = sessionStorage.getItem("loginStaffId");
+
+	document.querySelector(".doc-manage-button")
+	  .addEventListener("click", () => {
+
+	    if (!nurseId) {
+	      alert("로그인 정보가 없습니다.");
+	      return;
+	    }
+
+	    const docType = prompt(
+	      "요청할 문서 종류를 입력하세요\n(PRESCRIPTION / CERTIFICATION / OPINION)"
+	    );
+
+	    if (!docType) return;
+
+	    fetch(`/api/document-request?nurseId=${nurseId}&docType=${docType}`, {
+	      method: "POST"
+	    })
+	    .then(res => {
+	      if (!res.ok) throw new Error();
+	      return res.json();
+	    })
+	    .then(() => {
+	      alert("의사에게 문서 요청이 전송되었습니다.");
+	      loadRequestedList();
+	    })
+	    .catch(() => {
+	      alert("문서 요청 실패");
+	    });
+	});
+function loadRequestedList() {
+	  fetch("/api/document-request/requested")
+	    .then(res => res.json())
+	    .then(list => {
+	      const container = document.querySelector(".card .status-empty");
+	      const count = document.querySelector(".status-count");
+
+	      count.innerText = `${list.length}건`;
+
+	      if (list.length === 0) {
+	        container.innerHTML = `
+	          <div class="status-empty-icon"><i class="far fa-file-alt"></i></div>
+	          요청 대기 문서가 없습니다
+	        `;
+	        return;
+	      }
+
+	      container.innerHTML = list.map(r => `
+	        <div style="text-align:left; margin-bottom:12px;">
+	          <div><strong>${r.visit.patient.name}</strong></div>
+	          <div style="font-size:12px; color:#6b7280;">
+	            ${r.docType} · 요청 ${r.requestedAt.replace('T',' ')}
+	          </div>
+	        </div>
+	      `).join("");
+	    });
+	}
+
+function loadSentDocuments() {
+	  fetch("/api/document-request/sent")
+	    .then(res => res.json())
+	    .then(list => {
+	      const area = document.querySelector(".doc-list-area");
+	      area.innerHTML = "";
+
+	      if (list.length === 0) {
+	        area.innerHTML =
+	          "<div style='padding:16px;color:#9ca3af'>발행된 문서가 없습니다</div>";
+	        return;
+	      }
+
+	      list.forEach((r, idx) => {
+	        const row = document.createElement("div");
+	        row.className = "doc-row";
+	        if (idx === 0) row.classList.add("active");
+
+	        row.innerHTML = `
+	          <span class="pill-type">${r.docType}</span>
+	          <div style="font-size:12px;color:#6b7280;">
+	            발행 요청 시간: ${r.requestedAt.replace('T',' ')}
+	          </div>
+	        `;
+
+	        // 문서 미리보기는 requestId 기준으로
+	        row.onclick = () => loadPreviewByRequest(r.requestId);
+
+	        area.appendChild(row);
+	      });
+	    });
+	}
+
+	
+function loadPreview(visitId, docType, requestId) {
+
+	  fetch(`/api/document/visit/${visitId}`)
+	    .then(res => res.json())
+	    .then(list => {
+
+	      // 같은 visit 안에서 docType 맞는 문서 찾기
+	      const doc = list.find(d => d.docType === docType);
+	      if (!doc) {
+	        alert("문서를 찾을 수 없습니다.");
+	        return;
+	      }
+
+	      const preview = document.querySelector(".preview-inner");
+
+	      preview.innerHTML = `
+	        <h2 style="text-align:center;">${doc.docType}</h2>
+
+	        <div style="margin-top:20px;">
+	          ${doc.contentHtml}
+	        </div>
+	      `;
+
+	      // 🔥 다운로드 버튼에 requestId 저장
+	      document
+	        .querySelector(".btn-white-outline-preview")
+	        .setAttribute("data-request-id", requestId);
+	    });
+	}
+	
+function loadPreviewByRequest(requestId) {
+	  fetch(`/api/document/request/${requestId}`)
+	    .then(res => res.json())
+	    .then(doc => {
+	      const preview = document.querySelector(".preview-inner");
+
+	      preview.innerHTML = `
+	        <h2 style="text-align:center;">${doc.docType}</h2>
+	        <div style="margin-top:20px;">
+	          ${doc.contentHtml}
+	        </div>
+	      `;
+	    });
+	}
+	
+	
+document
+.querySelector(".btn-white-outline-preview")
+.addEventListener("click", () => {
+
+  const btn = document.querySelector(".btn-white-outline-preview");
+  const requestId = btn.getAttribute("data-request-id");
+
+  if (!requestId) {
+    alert("선택된 문서가 없습니다.");
+    return;
+  }
+
+  // ✅ 상태 COMPLETED 처리
+  fetch(`/api/document-request/${requestId}/complete`, {
+    method: "PATCH"
+  })
+  .then(() => {
+    alert("문서 다운로드 완료");
+
+    // 🔄 목록 갱신
+    loadSentDocuments();      // 발행된 문서 목록
+    loadCompletedList();      // 최근 발행 완료
+  })
+  .catch(err => {
+    console.error(err);
+    alert("다운로드 처리 실패");
+  });
+});
+
+function loadCompletedList() {
+	  fetch("/api/document-request/completed")
+	    .then(res => res.json())
+	    .then(list => {
+
+	      const container = document.querySelector(".recent-row");
+	      container.innerHTML = "";
+
+	      if (list.length === 0) {
+	        container.innerHTML = `
+	          <div style="color:#9ca3af;font-size:14px;">
+	            최근 발행 완료 문서가 없습니다
+	          </div>
+	        `;
+	        return;
+	      }
+
+	      list.forEach(r => {
+	        container.innerHTML += `
+	          <div>
+	            <div class="recent-patient">
+	              ${r.visit.patient.name}
+	              <span class="recent-chart">${r.visit.patient.chartNo}</span>
+	            </div>
+	            <span class="pill-type">${r.docType}</span>
+	            <div style="font-size:12px;color:#6b7280;margin-top:4px;">
+	              완료: ${r.requestedAt.replace('T',' ')}
+	            </div>
+	          </div>
+	        `;
+	      });
+	    });
+	}
+
+	// 페이지 로드 시 실행
+	loadCompletedList();
+</script>
 
 </body>
 </html>
